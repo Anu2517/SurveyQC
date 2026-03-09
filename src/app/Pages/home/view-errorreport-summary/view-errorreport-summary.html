@@ -1,0 +1,157 @@
+<div class="report-page">
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="pi pi-arrow-left"></i>
+    </button>
+    <h2 class="title">Report</h2>
+    <h2 class="subtitle">Vendor Wise Report Summary</h2>
+    <button pButton type="button" label="Download Report" icon="pi pi-download" class="p-button-primary download-btn"
+      (click)="generatePDF()">
+    </button>
+  </div>
+
+  <div class="report-wrapper">
+    <section class="report-intro intro-page">
+      <div class="report-intro-hero">
+        <div class="report-intro-bg-container">
+          <img src="/outline/bg.png" alt="Drilling Tool" class="report-intro-bg-image">
+
+          <div class="report-intro-overlay">
+            <h1 class="report-intro-main-title">
+              Vendor-Wise<br>
+              Error<br>
+              Summary Report
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-intro-metadata">
+        <table class="report-intro-date-table">
+          <tr>
+            <td class="report-intro-date-label">Report Date :</td>
+            <td class="report-intro-date-value">
+              {{ dateForPrintView | date:'MM/dd/yyyy HH:mm:ss aa' }}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="report-intro-spacer"></div>
+
+      <footer class="report-intro-footer">
+        <img src="logo.png" alt="Halliburton Logo" class="report-intro-logo">
+      </footer>
+    </section>
+
+    @for (report of providerReports; track report.providerName) {
+    <div class="provider-section">
+      <div class="section-header">
+        {{ report.providerName }}
+      </div>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Error Type</th>
+            <th>Count</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (error of report.errors; track error.label) {
+          <tr>
+            <td>{{ error.label }}</td>
+            <td>{{ error.count }}</td>
+            <td>{{ error.percentage }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (report.approvalSummary) {
+      <div class="sub-header">
+        Survey Approval Summary for {{ report.providerName }}
+      </div>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Total Surveys Processed</th>
+            <th>Auto Approved Surveys</th>
+            <th>Gyro Surveys</th>
+            <th>Percentage Auto Approved</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>{{ report.approvalSummary.totalSurveys }}</td>
+            <td>{{ report.approvalSummary.autoApprovedSurveys }}</td>
+            <td>{{ report.approvalSummary.gyroSurveys }}</td>
+            <td>{{ report.approvalSummary.percentageAutoApproved }}</td>
+          </tr>
+        </tbody>
+      </table>
+      }
+
+
+      @if (report.missingDataErrors.length > 0) {
+      <div class="sub-header">
+        Mandatory Values Missing - Data Summary
+      </div>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Service Provider</th>
+            <th>Missing Data Type</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (error of report.missingDataErrors; track error.label; let i = $index) {
+          <tr>
+            <td>{{ i === 0 ? report.providerName : '' }}</td>
+            <td>{{ error.label }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+
+      <div echarts [options]="report.chartOption" class="chart">
+      </div>
+    </div>
+    }
+
+    <div class="report-disclaimer disclaimer-page">
+      <div class="report-disclaimer-container">
+        <header class="report-disclaimer-header">
+          <h2 class="report-disclaimer-title">
+            Disclaimer
+          </h2>
+        </header>
+
+        <div class="report-disclaimer-body">
+          <p class="report-disclaimer-text">
+            Because of the uncertainty of variable well conditions the necessity of relying
+            on facts and supporting services furnished by others,
+            <strong>Halliburton IS UNABLE TO GUARANTEE</strong>
+            the effectiveness of the products, supplies or materials, nor the results of
+            any treatment or service, nor the accuracy of any chart interpretation.
+
+            Halliburton personnel will use their best efforts in gathering such information
+            and their best judgment in interpreting it, but Customer agrees that Halliburton
+            shall not be liable for and Customer
+            <strong>SHALL RELEASE, DEFEND AND INDEMNIFY</strong>
+            Halliburton against any damages or liability arising from the use of such information.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

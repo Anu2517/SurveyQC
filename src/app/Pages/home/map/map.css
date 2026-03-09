@@ -1,0 +1,96 @@
+#map {
+  width: 100%;
+  height: calc(100vh - 60px);
+}
+
+.reset-btn {
+  background: #34c9eb;
+  padding: 5px;
+  border: 1px solid #58d8f5;
+  cursor: pointer;
+}
+
+.marker-wrapper {
+  text-align: center;
+}
+
+.marker-dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+}
+
+.marker-label {
+  font-size: 10px;
+  color: black;
+}
+
+.custom-cluster-icon {
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.popup-header {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.popup-actions {
+  margin: 10px 0;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.map-action-btn {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 4px;
+}
+
+.msa-btn {
+  font-weight: bold;
+  padding: 4px 8px;
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.map-view {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.map-view th,
+.map-view td {
+  padding: 4px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.auto-approved-bar,
+.user-approved-bar,
+.auto-reject-bar,
+.total-user-rejected-surveys-bar,
+.unknown-surveys-bar {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.auto-approved-bar               { background-color: #00cc44; }
+.user-approved-bar               { background-color: #0099ff; }
+.auto-reject-bar                 { background-color: rgba(247, 39, 39, 0.644); }
+.total-user-rejected-surveys-bar { background-color: red; }
+.unknown-surveys-bar             { background-color: #aaaaaa; }

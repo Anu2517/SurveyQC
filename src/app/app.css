@@ -1,0 +1,50 @@
+html, body {
+  height: 100%;
+  background-color: #000;
+}
+
+.layout-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #000; 
+}
+
+.sidebar {
+  flex: 0 0 auto;
+  transition: width 0.3s ease;
+  z-index: 10; 
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #000; 
+  overflow: hidden; 
+}
+
+.content-area {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: #0c4f6e transparent;
+  background: #000;
+}
+
+.content-area {
+  overflow-y: auto;
+}
+
+app-footer {
+  display: block;
+  width: 100%;
+  background: #06121a;
+  color: #fff;
+  text-align: center;
+  padding: 4px 0; 
+  font-size: 11px; 
+  flex-shrink: 0; 
+}

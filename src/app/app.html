@@ -1,22 +1,16 @@
-<div class="layout-container" 
-  (mousemove)="onSideResize($event)" 
-  (mouseup)="stopResize()">
-
-  <div class="sidebar"
-    [style.width.px]="_commonService.isSidebarCollapsed ? 0 : siderWidth">
-
+<div class="layout-container" (mousemove)="onSideResize($event)" (mouseup)="stopResize()">
+  <div class="sidebar" [style.width.px]="_commonService.isSidebarCollapsed ? 0 : siderWidth">
     <app-sidebar></app-sidebar>
-
-    <div class="resize-handle"
-      (mousedown)="startResize()">
-    </div>
-
+    <div class="resize-handle" (mousedown)="startResize()"></div>
   </div>
 
   <div class="main-content">
     <app-header></app-header>
-    <router-outlet></router-outlet>
+
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+
     <app-footer></app-footer>
   </div>
-
 </div>

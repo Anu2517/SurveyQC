@@ -1,0 +1,322 @@
+/* .sidebar-wrapper {
+  flex-shrink: 0;
+  height: 100vh;
+  background: linear-gradient(180deg, #0b1f2c, #05131d);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 12px;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  font-family: "Segoe UI", sans-serif;
+  width: 100%;       
+  
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.sidebar-logo img {
+  width: 34px;
+  height: 34px;
+}
+
+.sidebar-logo h1 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.version {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.status {
+  position: absolute;
+  top: 18px;
+  right: 15px;
+}
+
+.server-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse 1.4s infinite alternate;
+}
+
+.server-status.connected {
+  background-color: #39ff14;
+}
+
+.server-status.disconnected {
+  background-color: #ff2b2b;
+}
+
+@keyframes pulse {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+.survey-container {
+  background: linear-gradient(135deg, #092637, #051822);
+  border: 1px solid #0c4f6e;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 140, 255, 0.1);
+}
+
+.survey-container h3 {
+  background: #0c3a53;
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 0;
+  border-bottom: 1px solid #0c4f6e;
+  font-weight: 600;
+}
+
+.survey-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.survey-item:last-child {
+  border-bottom: none;
+}
+
+.survey-item label {
+  opacity: 0.85;
+}
+
+.survey-item span {
+  font-weight: 600;
+}
+
+.filters {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field label {
+  font-size: 12px;
+  margin-bottom: 5px;
+  display: block;
+  opacity: 0.9;
+}
+
+.field .p-inputtext,
+.field .p-select,
+.field .p-datepicker,
+.field .p-button {
+  width: 100%;
+  font-size: 12px;
+}
+
+.sidebar-wrapper {
+  --p-inputtext-background: #071923;
+  --p-inputtext-color: #ffffff;
+  --p-inputtext-border-color: #0c4f6e;
+
+  --p-select-background: #071923;
+  --p-select-color: #ffffff;
+  --p-select-border-color: #0c4f6e;
+
+  --p-datepicker-background: #071923;
+  --p-datepicker-color: #ffffff;
+  --p-datepicker-border-color: #0c4f6e;
+
+  --p-button-background: #0c3a53;
+  --p-button-border-color: #0c4f6e;
+  --p-button-color: #ffffff;
+}
+
+.simulation-status {
+  margin-top: auto;
+  background: #b30000;
+  color: #fff;
+  text-align: center;
+  padding: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 6px;
+} */
+
+.sidebar-wrapper {
+  flex-shrink: 0;
+  height: 100vh;
+  background: linear-gradient(180deg, #0b1f2c, #05131d);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column; 
+  position: relative;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
+  font-family: "Segoe UI", sans-serif;
+  width: 100%;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 12px 12px 0 12px;
+  position: relative;
+}
+
+.sidebar-body {
+  flex: 1; 
+  overflow-y: hidden;
+  padding: 12px;
+  /* scrollbar-gutter: stable;  */
+}
+
+.sidebar-footer {
+  padding: 12px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.sidebar-logo img {
+  width: 34px;
+  height: 34px;
+}
+
+.sidebar-logo h1 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.version {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.status {
+  position: absolute;
+  top: 18px;
+  right: 15px;
+}
+
+.server-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse 1.4s infinite alternate;
+}
+
+.server-status.connected { background-color: #39ff14; }
+.server-status.disconnected { background-color: #ff2b2b; }
+
+@keyframes pulse {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+.survey-container {
+  background: linear-gradient(135deg, #092637, #051822);
+  border: 1px solid #0c4f6e;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 140, 255, 0.1);
+}
+
+.survey-container h3 {
+  background: #0c3a53;
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 0;
+  border-bottom: 1px solid #0c4f6e;
+  font-weight: 600;
+}
+
+.survey-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.survey-item:last-child { border-bottom: none; }
+
+.filters {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field label {
+  font-size: 12px;
+  margin-bottom: 5px;
+  display: block;
+  opacity: 0.9;
+}
+
+.field .p-inputtext,
+.field .p-select,
+.field .p-datepicker,
+.field .p-button {
+  width: 100%;
+  font-size: 12px;
+}
+
+/* PrimeNG Variables */
+.sidebar-wrapper {
+  --p-inputtext-background: #071923;
+  --p-inputtext-color: #ffffff;
+  --p-inputtext-border-color: #0c4f6e;
+  --p-select-background: #071923;
+  --p-select-color: #ffffff;
+  --p-select-border-color: #0c4f6e;
+  --p-datepicker-background: #071923;
+  --p-datepicker-color: #ffffff;
+  --p-datepicker-border-color: #0c4f6e;
+  --p-button-background: #0c3a53;
+  --p-button-border-color: #0c4f6e;
+  --p-button-color: #ffffff;
+}
+
+.simulation-status {
+  background: #b30000;
+  color: #fff;
+  text-align: center;
+  padding: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+/* custom scrollbar */
+@media (max-height: 850px) {
+  .sidebar-body {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #0c4f6e transparent;
+  }
+  
+  .sidebar-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .sidebar-body::-webkit-scrollbar-thumb {
+    background-color: #0c4f6e;
+    border-radius: 10px;
+  }
+}

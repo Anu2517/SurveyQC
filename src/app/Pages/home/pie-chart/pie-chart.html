@@ -1,0 +1,23 @@
+<div class="vendor-container">
+    <button pButton 
+        type="button" 
+        icon="pi pi-arrow-left" 
+        class="p-button-text p-button-plain" 
+        (click)="goBack()">
+</button>
+    <h2 class="page-title">Vendors Chart</h2>
+</div>
+<div class="pie-chart">
+    @for (data of pieChartData; track data.serviceCompany; let i = $index) {
+    <div class="pie">
+        <h3 class="chart-heading">
+            {{ _commonService.formatName(data.serviceCompany) }}
+            - ( Total Surveys - {{ data.totalSurveys }} )
+        </h3>
+        <div echarts [options]="_allPieChartOption[i]" class="chart" (chartClick)="onChartClick()">
+        </div>
+    </div>
+    }
+</div>
+
+

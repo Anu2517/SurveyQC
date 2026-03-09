@@ -7,7 +7,7 @@ import { Footer } from './layout/footer/footer';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Sidebar, Footer],
+  imports: [RouterOutlet , Header, Sidebar, Footer],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -26,10 +26,11 @@ export class App {
     if (performance.navigation.type === 1) {
       this.router.navigate(['/']);
     }
-
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this._commonService.hideOtherInfo = event.url !== '/';
+        const url = event.urlAfterRedirects || event.url;
+        const isHomeRoute = url === '/' || url.toLowerCase().startsWith('/home');
+        this._commonService.hideOtherInfo = !isHomeRoute;
       }
     });
   }

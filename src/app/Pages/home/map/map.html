@@ -1,0 +1,95 @@
+<div id="map"></div>
+
+<ng-template #markerTemplate let-color="color" let-label="label">
+  <div class="marker-wrapper">
+    <div class="marker-dot" [style.background-color]="color"></div>
+    <div class="marker-label">{{ label }}</div>
+  </div>
+</ng-template>
+
+<ng-template #clusterTemplate let-color="color" let-count="count">
+  <div class="custom-cluster-wrapper">
+    <div class="custom-cluster-icon" [style.background-color]="color">
+      {{ count }}
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #popupTemplate>
+  <div class="popup-header">
+    <strong>Wellbore Id:</strong>
+    {{ popupRig?.wellboreInfo?.wellboreId?.value ?? 'N/A' }}<br>
+
+    <strong>Service Company:</strong>
+    {{ getServiceCompanies(popupRig) }}
+  </div>
+
+  <div class="popup-actions">
+    <button class="map-action-btn msa-btn" (click)="onRunMSA()" title="Run MSA">
+      MSA
+    </button>
+
+    <button class="map-action-btn" (click)="onViewSurveys()" title="View Surveys">
+      <img src="outline/eye.png" alt="Surveys" class="btn-icon">
+    </button>
+
+    <button class="map-action-btn" (click)="onViewCharts()" title="View Charts">
+      <img src="outline/area-chart.png" alt="Charts" class="btn-icon">
+    </button>
+
+    <button class="map-action-btn" (click)="onViewReport()" title="View Report">
+      <img src="outline/file-pdf.png" alt="Report" class="btn-icon">
+    </button>
+  </div>
+
+  <table class="map-view">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Total Surveys</th>
+        <th>Auto Approved</th>
+        <th>User Approved</th>
+        <th>Auto Rejected</th>
+        <th>User Rejected</th>
+        <th>Unknown</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      @for (summary of getProcessSummary(popupRig); track summary.name) {
+      <tr>
+        <td>{{ _commonService.formatName(summary.name) }}</td>
+
+        <td>{{ summary.totalSurveys }}</td>
+
+        <td>
+          <span class="auto-approved-bar"></span>
+          {{ summary.totalAutoApprovedSurveys }}
+        </td>
+
+        <td>
+          <span class="user-approved-bar"></span>
+          {{ summary.totalUserApprovedSurveys }}
+        </td>
+
+        <td>
+          <span class="auto-reject-bar"></span>
+          {{ summary.totalAutoRejectedSurveys }}
+        </td>
+
+        <td>
+          <span class="total-user-rejected-surveys-bar"></span>
+          {{ summary.totalUserRejectedSurveys }}
+        </td>
+
+        <td>
+          <span class="unknown-surveys-bar"></span>
+          {{ summary.totalUnknownSurveys }}
+        </td>
+      </tr>
+      }
+
+    </tbody>
+  </table>
+</ng-template>

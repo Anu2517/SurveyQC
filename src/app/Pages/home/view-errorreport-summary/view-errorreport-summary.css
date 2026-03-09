@@ -1,0 +1,213 @@
+.report-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;   /* SCROLL HERE */
+  overflow-x: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to right, #07141d, #08202c);
+  padding: 10px 16px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.back-btn {
+  background: black;
+  color: white;
+}
+
+.title {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  font-size: 19px;
+}
+
+.subtitle {
+  color: #888484;
+  font-size: 14px;
+  flex: 1;
+}
+
+.download-btn {
+  background: #0293c4;
+  border: none;
+  padding: 5px 15px;
+}
+
+ .report-wrapper {
+  padding: 16px;
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.report-intro {
+  background: #ffffff;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  page-break-after: always;
+}
+
+.intro-page {
+  page-break-after: always;
+}
+
+.report-intro-hero {
+  position: relative;
+  height: 500px;
+  background: #c00000;
+}
+
+.report-intro-bg-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.report-intro-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7);
+}
+
+.report-intro-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #c00000;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.report-intro-main-title {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.report-intro-metadata {
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.report-intro-date-label {
+  font-weight: 700;
+  padding-right: 10px;
+}
+
+.report-intro-footer {
+  padding: 40px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.report-intro-logo {
+  height: 45px;
+}
+
+.provider-section {
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  break-inside: avoid;
+  margin-bottom: 20px;
+}
+
+.section-header,
+.sub-header {
+  background: #c00000;
+  color: #fff;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: #111;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.chart {
+  width: 100%;
+  min-height: 260px;
+  height: 260px;
+
+  overflow-x: auto;
+}
+
+.disclaimer-page {
+  page-break-before: always;
+}
+
+.report-disclaimer-container {
+  background: #fff;
+  border: 1px solid #ccc;
+  break-inside: avoid;
+}
+
+.report-disclaimer-header {
+  background: #c00000;
+  padding: 10px 12px;
+}
+
+.report-disclaimer-title {
+  color: #fff;
+  font-size: 14px;
+  margin: 0;
+}
+
+.report-disclaimer-body {
+  padding: 16px;
+}
+
+.report-disclaimer-text {
+  color: #333;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.report-page::-webkit-scrollbar {
+  width: 6px;
+}
+
+.report-page::-webkit-scrollbar-track {
+  background: #01121a;
+}
+
+.report-page::-webkit-scrollbar-thumb {
+  background: #053b4d;
+  border-radius: 4px;
+}
+
+.report-page::-webkit-scrollbar-thumb:hover {
+  background: #0293c4;
+}

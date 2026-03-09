@@ -1,0 +1,182 @@
+.dashboard {
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #000;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  align-items: stretch; 
+}
+
+.dashboard-card {
+  display: flex;
+  align-items: stretch;
+}
+
+.single-card {
+  width: 100%;
+  height: 100%; 
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #5aa3f291;
+  box-shadow: 0 4px 10px rgb(66 152 244 / 35%);
+  background: #0b1118;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  background: linear-gradient(to right, #0a4f7b, #1a6fa8);
+  color: white;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rig-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.view-survey {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.view-survey img {
+  width: 16px;
+  opacity: 0.9;
+}
+
+.card-content {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 12px;
+  background: linear-gradient(90deg, #000 20%, #0b1c2c 100%);
+  flex: 1 0 auto; 
+  align-items: start; 
+}
+
+.info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.icon-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #cfcfcf;
+  font-size: 13px;
+}
+
+.icon-small img {
+  width: 14px;
+  opacity: 0.7;
+}
+
+.total-surveys {
+  text-align: right;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.total-surveys .value {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.total-surveys .label {
+  font-size: 10px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.footer-wrapper {
+  margin-top: auto; 
+  display: flex;
+  flex-direction: column;
+}
+
+.survey-heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #10283d;
+  border-top: 1px solid #224c74;
+  font-size: 13px;
+  color: #d9d9d9;
+}
+
+.survey-name,
+.survey-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.survey-count-val {
+  color: #4298f4;
+  font-weight: bold;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px;
+  background: #16222e;
+}
+
+.label-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: white;
+}
+
+.status-icon {
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon img {
+  width: 10px;
+}
+
+.auto-approved-bar .status-icon { background: #2ecc71; }
+.user-approved-bar .status-icon { background: #3498db; }
+.auto-reject-bar .status-icon { background: #e74c3c; }
+.total-user-rejected-surveys-bar .status-icon { background: #8b0000; }
+.unknown-surveys-bar .status-icon { background: #5a5a5a; }
+
+.truncate-text {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+

@@ -1,1 +1,220 @@
 @import "primeicons/primeicons.css";
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; 
+}
+
+* {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.config-popover-custom.p-popover {
+  background: #01121a !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  padding: 0 !important;
+}
+
+.config-popover-custom .p-popover-content {
+  background: #01121a !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+fac-limits-popover.p-popover {
+  background: #01121a !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  padding: 0 !important;
+}
+
+.fac-limits-popover .p-popover-content {
+  background: #01121a !important;
+  padding: 0 !important;
+}
+
+
+.fac-toast .p-toast-message {
+  background: #1f2933;
+  border: 1px solid #2d3748;
+  border-radius: 4px;
+  color: #e5e7eb;
+}
+
+.fac-toast .p-toast-summary,
+.fac-toast .p-toast-detail {
+  color: #e5e7eb !important;
+}
+
+.fac-toast .p-toast-message-success .p-toast-message-icon {
+  color: #22c55e !important;
+  font-size: 1.2rem;
+}
+
+.fac-toast .p-toast-icon-close {
+  color: #e5e7eb !important;
+}
+
+/* ── Layout Select Dropdown Panel ───────────────────────────── */
+.p-select-overlay {
+  background-color: #0d1117 !important;
+  border: 1px solid #1e3a5f !important;
+  border-radius: 4px !important;
+  padding: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+.p-select-overlay .p-select-list {
+  padding: 0 !important;
+  background-color: #0d1117 !important;
+}
+
+.p-select-overlay .p-select-option {
+  background-color: #0d1117 !important;
+  color: #cccccc !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid #1a2a3a !important;
+}
+
+.p-select-overlay .p-select-option:last-child {
+  border-bottom: none !important;
+}
+
+.p-select-overlay .p-select-option:hover,
+.p-select-overlay .p-select-option.p-focus {
+  background-color: #1a2a3a !important;
+  color: #ffffff !important;
+}
+
+.p-select-overlay .p-select-option.p-selected {
+  background-color: #1e3a5f !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.p-select-overlay .layout-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: inherit;
+}
+
+
+/* email-configuration */
+.p-popover:has(.email-form) {
+  background: #01121a !important;
+  border: none !important;
+}
+
+.p-popover:has(.email-form) .p-popover-content {
+  background: #01121a !important;
+  padding: 12px !important;
+}
+
+.p-popover:has(.email-form) .p-inputtext,
+.p-popover:has(.email-form) .p-inputnumber input,
+.p-popover:has(.email-form) .p-password input {
+  background: #0d1117 !important;
+  border: 1px solid #30363d !important;
+  color: #ffffff !important;
+  height: 32px !important;
+  width: 100% !important;
+}
+
+.p-popover:has(.email-form) .p-inputnumber,
+.p-popover:has(.email-form) .p-password {
+  width: 100% !important;
+  flex: 1;
+}
+
+/* Ensure the root and layout containers use the same background as .main-content */
+app-root,
+.layout-container,
+.main-content {
+  background-color: #000 !important;
+}
+
+/* Hide popover/overlay arrow triangles (PrimeNG appendTo="body") */
+.p-popover::before,
+.p-popover::after,
+.p-connected-overlay::before,
+.p-connected-overlay::after,
+.p-overlaypanel::before,
+.p-overlaypanel::after,
+.p-tooltip::before,
+.p-tooltip::after,
+.p-overlaypanel .p-arrow,
+.p-popover .p-arrow {
+  display: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure popovers (including appended-to-body overlays) keep the dark theme background */
+.p-popover,
+.p-overlaypanel,
+.p-connected-overlay,
+.p-popover .p-popover-content,
+.p-overlaypanel .p-overlaypanel-content,
+.popover-container {
+  background-color: #050c12 !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #1b3a4b !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+}
+
+/* Inputs inside popovers should keep dark backgrounds */
+.p-popover .p-inputtext,
+.p-popover input,
+.p-overlaypanel .p-inputtext,
+.p-overlaypanel input {
+  background-color: #07151d !important;
+  border: 1px solid #1b3a4b !important;
+  color: #ffffff !important;
+}
+
+/* PrimeNG checkbox theming: dark box, spaced label, visible white tick */
+.p-checkbox {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  vertical-align: middle !important;
+}
+
+.p-checkbox .p-checkbox-box {
+  width: 18px !important;
+  height: 18px !important;
+  background: #07151d !important;
+  border: 1px solid #334155 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.p-checkbox .p-checkbox-box.p-highlight {
+  background: #0293c4 !important;
+  border-color: #0293c4 !important;
+}
+
+.p-checkbox .p-checkbox-icon {
+  color: #ffffff !important;
+  font-size: 14px !important;
+}
+
+.checkbox-text {
+  margin-left: 6px !important;
+  color: #e2e8f0 !important;
+}
+
+.p-popover .p-checkbox .p-checkbox-box,
+.popover-container .p-checkbox .p-checkbox-box {
+  background: #07151d !important;
+  border: 1px solid #334155 !important;
+}

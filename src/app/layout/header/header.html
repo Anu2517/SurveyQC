@@ -1,1 +1,502 @@
-<p>header works!</p>
+<div class="header-container">
+  <p-toast position="top-right" styleClass="fac-toast" [baseZIndex]="9999"></p-toast>
+  <div class="left-header">
+    <button pButton type="button" [icon]="_commonService.isSidebarCollapsed ? 'pi pi-bars' : 'pi pi-chevron-left'"
+      (click)="updateSidebar()" class="p-button-rounded p-button-text sidebar-toggle-btn">
+    </button>
+    <img src="halliburton-logo.png" alt="Logo" class="header-logo" />
+  </div>
+
+  <div class="right-header">
+
+    @if (_commonService.selectedDashboardLayout === 'Map') {
+    <div class="auto-refresh">
+      <p-checkbox [(ngModel)]="_commonService.isAutoRefreshEnable" [binary]="true" inputId="autoRefresh">
+      </p-checkbox>
+
+      <label for="autoRefresh">Auto Refresh</label>
+    </div>
+    }
+
+    <div class="header-stat">
+      <span>Total Wells</span>
+      <b>{{ _commonService.wellBoreArr.length }}</b>
+    </div>
+
+    <div class="header-stat">
+      <span>Survey Queue</span>
+      <b>{{ surveyQueue }}</b>
+    </div>
+
+    <div class="email-config">
+      <button pButton type="button" icon="pi pi-envelope" class="p-button-rounded p-button-success"
+        (click)="emailPopover.toggle($event)">
+      </button>
+      <p-popover #emailPopover appendTo="body">
+        <form [formGroup]="emailConfigForm" class="email-form">
+          <div class="form-group">
+            <label class="font-semibold"><span class="required">*</span>From</label>
+            <input pInputText formControlName="from" type="email" />
+
+            @if (emailConfigForm.get('from')?.touched && emailConfigForm.get('from')?.invalid) {
+            <small class="p-error">Enter valid email</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="font-semibold"><span class="required">*</span>SMTP Server</label>
+            <input pInputText formControlName="smtpServer" />
+          </div>
+
+          <div class="form-group">
+            <label class="font-semibold"><span class="required">*</span>Port</label>
+            <p-inputNumber formControlName="port" [useGrouping]="false"></p-inputNumber>
+          </div>
+
+          <div class="form-group">
+            <label class="font-semibold"><span class="required">*</span>Username</label>
+            <input pInputText formControlName="userName" />
+          </div>
+
+          <div class="form-group">
+            <label class="font-semibold"><span class="required">*</span>Password</label>
+            <p-password formControlName="password" [feedback]="false" toggleMask="true"></p-password>
+          </div>
+
+          <div class="emailform-btns">
+            <button pButton type="button" label="Reset" severity="secondary" (click)="emailConfigForm.reset()"></button>
+            <button pButton type="button" label="Submit" (click)="submitEmailConfigForm()"
+              [disabled]="emailConfigForm.invalid">
+            </button>
+          </div>
+        </form>
+      </p-popover>
+    </div>
+
+    <div class="settings">
+      <button pButton type="button" icon="pi pi-cog" class="p-button-rounded p-button-primary"
+        (click)="witsmlPopover.toggle($event)" title="WITSML Configuration">
+      </button>
+      <p-popover #witsmlPopover appendTo="body">
+        <div class="witsml-form p-fluid" style="min-width: 400px;">
+          <form [formGroup]="witsmlAuthForm">
+
+            <div class="field">
+              <label class="font-semibold"><span class="required">*</span>URL</label>
+              <input pInputText formControlName="url" />
+              @if (witsmlAuthForm.get('url')?.invalid && witsmlAuthForm.get('url')?.touched) {
+              <small class="p-error">
+                Please enter a valid URL
+              </small>
+              }
+            </div>
+
+            <div class="field">
+              <label class="font-semibold"><span class="required">*</span>Username</label>
+              <input pInputText formControlName="userName" />
+            </div>
+
+            <div class="field">
+              <label class="font-semibold"><span class="required">*</span>Password</label>
+              <input pInputText type="password" formControlName="password" />
+            </div>
+
+            @if (showAdvancedSettings) {
+            <div class="mt-3">
+
+              <div class="field">
+                <label>Timeout (ms)</label>
+                <input pInputText type="number" formControlName="timeout" />
+              </div>
+
+              <div class="field">
+                <label>Version</label>
+                <input pInputText type="number" formControlName="version" />
+              </div>
+
+              <div class="field-checkbox">
+                <p-checkbox formControlName="acceptInvalidCertificate" binary="true"></p-checkbox>
+                <label class="ml-2">Accept Invalid Certificate</label>
+              </div>
+
+              <div class="field">
+                <label>Proxy Address</label>
+                <input pInputText formControlName="proxyAddress" />
+              </div>
+
+              <div class="field">
+                <label>Proxy Port</label>
+                <input pInputText type="number" formControlName="proxyPort" />
+              </div>
+
+              <div class="field">
+                <label>Proxy Username</label>
+                <input pInputText formControlName="proxyUserName" />
+              </div>
+
+              <div class="field">
+                <label>Proxy Password</label>
+                <input pInputText type="password" formControlName="proxyPassword" />
+              </div>
+
+              <div class="field-checkbox">
+                <p-checkbox formControlName="preAuthenticate" binary="true"></p-checkbox>
+                <label class="ml-2">Pre-Authenticate</label>
+              </div>
+
+              <div class="field-checkbox">
+                <p-checkbox formControlName="isAuthenticationBasic" binary="true"></p-checkbox>
+                <label class="ml-2">Basic Authentication</label>
+              </div>
+
+            </div>
+            }
+
+            <div class="btns-section">
+
+              <button pButton type="button" class="advanced-btn" (click)="toggleAdvancedSettings()">
+                {{ showAdvancedSettings ? 'Hide Advanced Settings' : 'Show Advanced Settings' }}
+              </button>
+
+              <div class="right-btns">
+                <button pButton type="button" label="Reset" class="p-button-secondary" (click)="resetForm()">
+                </button>
+
+                <button pButton type="button" label="Test Connection" class="p-button-secondary" (click)="testConnection()"
+                  [disabled]="!witsmlAuthForm.valid">
+                </button>
+
+                <button pButton type="button" label="Submit" (click)="submitForm()" [disabled]="!witsmlAuthForm.valid">
+                </button>
+              </div>
+
+            </div>
+
+          </form>
+        </div>
+
+      </p-popover>
+    </div>
+
+    <div class="chart-toggle">
+      <button pButton type="button" [icon]="!_commonService.pieChartStatus ? 'pi pi-chart-bar' : 'pi pi-eye-slash'"
+        class="p-button-rounded p-button-text chart" (click)="routeToVendorCharts()"
+        [pTooltip]="!_commonService.pieChartStatus ? 'Show Vendors Survey Chart' : 'Hide Vendors Survey Charts'"
+        tooltipPosition="bottom">
+      </button>
+
+      <button pButton type="button" icon="pi pi-chart-pie" class="p-button-rounded p-button-text chart"
+        (click)="routeToErrorSummary()" pTooltip="Show Summary Error" tooltipPosition="bottom">
+      </button>
+    </div>
+
+
+    <div class="fac-limits">
+      <button pButton label="FAC Limits" class="fac-trigger-btn" (click)="facPopover.toggle($event)">
+      </button>
+
+      <p-popover #facPopover styleClass="fac-limits-popover">
+        <div class="fac-form-container">
+          <form [formGroup]="facLimitsForm" (ngSubmit)="submitFacLimits()">
+
+            <div class="fac-field">
+              <label class="fac-label"><span class="required">*</span> Azimuth QC Limit</label>
+              <div class="p-inputgroup fac-input-group">
+                <input type="text" pInputText formControlName="azimuthQCLimits" (keypress)="allowOnlyNumbers($event)" />
+                <span class="p-inputgroup-addon">dega</span>
+              </div>
+            </div>
+
+            <div class="fac-field">
+              <label class="fac-label"><span class="required">*</span> Inclination QC Limit</label>
+              <div class="p-inputgroup fac-input-group">
+                <input type="text" pInputText formControlName="inclinationQCLimits"
+                  (keypress)="allowOnlyNumbers($event)" />
+                <span class="p-inputgroup-addon">dega</span>
+              </div>
+            </div>
+
+            <div class="fac-field">
+              <label class="fac-label"><span class="required">*</span> Btotal QC Limit</label>
+              <div class="p-inputgroup fac-input-group">
+                <input type="text" pInputText formControlName="bTotalQCLimits" (keypress)="allowOnlyNumbers($event)" />
+                <span class="p-inputgroup-addon">nT</span>
+              </div>
+            </div>
+
+            <div class="fac-field">
+              <label class="fac-label"><span class="required">*</span> Gtotal QC Limit</label>
+              <div class="p-inputgroup fac-input-group">
+                <input type="text" pInputText formControlName="gTotalQCLimits" (keypress)="allowOnlyNumbers($event)" />
+                <span class="p-inputgroup-addon">g</span>
+              </div>
+            </div>
+
+            <div class="fac-field">
+              <label class="fac-label"><span class="required">*</span> Dip QC Limit</label>
+              <div class="p-inputgroup fac-input-group">
+                <input type="text" pInputText formControlName="dipQCLimits" (keypress)="allowOnlyNumbers($event)" />
+                <span class="p-inputgroup-addon">dega</span>
+              </div>
+            </div>
+
+            <div class="fac-footer">
+              <button pButton type="button" label="Reset" class="reset-btn"
+                (click)="resetfacLimitsForm()">
+              </button>
+              <button pButton type="submit" label="Submit" class="submit-btn" [disabled]="!facLimitsForm.valid">
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </p-popover>
+    </div>
+
+    <div class="process-config">
+      <button pButton type="button" icon="pi pi-cog" label="Process Configuration"
+        (click)="processPopover.toggle($event)">
+      </button>
+
+      <p-popover #processPopover styleClass="config-popover-custom">
+        <div class="popover-container">
+          <form [formGroup]="processConfigForm">
+
+            <div class="config-card single-row">
+              <p-checkbox formControlName="autoRejectSurveys" [binary]="true" inputId="autoReject"></p-checkbox>
+              <label for="autoReject" class="checkbox-text">Auto Reject Surveys</label>
+            </div>
+
+            <div class="config-card single-row">
+              <p-checkbox formControlName="allowAllWellbores" [binary]="true" inputId="allowWellbores"></p-checkbox>
+              <label for="allowWellbores" class="checkbox-text">Allow All Wellbores</label>
+            </div>
+
+            <div class="config-card" formGroupName="usedMagneticReference">
+              <div class="card-header">
+                <p-checkbox formControlName="checkThreshold" [binary]="true" inputId="magRef"></p-checkbox>
+                <label for="magRef" class="checkbox-text">Magnetic Reference</label>
+              </div>
+              @if (processConfigForm.get('usedMagneticReference.checkThreshold')?.value) {
+              <div class="card-body range-layout">
+            >
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Threshold</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="threshold" />
+                      <span pInputGroupAddon>nT</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="config-card" formGroupName="usedDipReference">
+              <div class="card-header">
+                <p-checkbox formControlName="checkThreshold" [binary]="true" inputId="dipRef"></p-checkbox>
+                <label for="dipRef" class="checkbox-text">Dip Reference</label>
+              </div>
+              @if (processConfigForm.get('usedDipReference.checkThreshold')?.value) {
+              <div class="card-body range-layout">
+            >
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Threshold</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="threshold" />
+                      <span pInputGroupAddon>dega</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="config-card" formGroupName="usedDeclinationReference">
+              <div class="card-header">
+                <p-checkbox formControlName="checkThreshold" [binary]="true" inputId="decRef"></p-checkbox>
+                <label for="decRef" class="checkbox-text">Declination Reference</label>
+              </div>
+              @if (processConfigForm.get('usedDeclinationReference.checkThreshold')?.value) {
+              <div class="card-body range-layout">
+          >
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Threshold</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="threshold" />
+                      <span pInputGroupAddon>dega</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="config-card" formGroupName="surveyResolutionDepth">
+              <div class="card-header">
+                <p-checkbox formControlName="checkThreshold" [binary]="true" inputId="resDepth"></p-checkbox>
+                <label for="resDepth" class="checkbox-text">Survey Resolution Depth</label>
+              </div>
+              @if (processConfigForm.get('surveyResolutionDepth.checkThreshold')?.value) {
+              <div class="card-body range-layout">>
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Threshold</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="threshold" />
+                      <span pInputGroupAddon>ft</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="config-card" formGroupName="checkGravityRange">
+              <div class="card-header">
+                <p-checkbox formControlName="checkRangeLimits" [binary]="true" inputId="gravRange"></p-checkbox>
+                <label for="gravRange" class="checkbox-text">Check Gravity Range</label>
+              </div>
+              @if (processConfigForm.get('checkGravityRange.checkRangeLimits')?.value) {
+              <div class="card-body range-layout">
+                <div class="side-text">G/B</div>
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Low Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="lowLimit" />
+                      <span pInputGroupAddon>g</span>
+                    </p-inputGroup>
+                  </div>
+                  <div class="input-row">
+                    <span class="field-label">High Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="highLimit" />
+                      <span pInputGroupAddon>g</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="config-card" formGroupName="checkGravityReferenceRange">
+              <div class="card-header">
+                <p-checkbox formControlName="checkRangeLimits" [binary]="true" inputId="gravRefRange"></p-checkbox>
+                <label for="gravRefRange" class="checkbox-text">Check Gravity Reference Range</label>
+              </div>
+              @if (processConfigForm.get('checkGravityReferenceRange.checkRangeLimits')?.value) {
+              <div class="card-body range-layout">
+>
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Low Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="lowLimit" />
+                      <span pInputGroupAddon>g</span>
+                    </p-inputGroup>
+                  </div>
+                  <div class="input-row">
+                    <span class="field-label">High Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="highLimit" />
+                      <span pInputGroupAddon>g</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="config-card" formGroupName="checkMagneticRange">
+              <div class="card-header">
+                <p-checkbox formControlName="checkRangeLimits" [binary]="true" inputId="magRange"></p-checkbox>
+                <label for="magRange" class="checkbox-text">Check Magnetic Range</label>
+              </div>
+              @if (processConfigForm.get('checkMagneticRange.checkRangeLimits')?.value) {
+              <div class="card-body range-layout">
+                <!-- <div class="side-text">nT</div> -->
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Low Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="lowLimit" />
+                      <span pInputGroupAddon>nT</span>
+                    </p-inputGroup>
+                  </div>
+                  <div class="input-row">
+                    <span class="field-label">High Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="highLimit" />
+                      <span pInputGroupAddon>nT</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="config-card" formGroupName="checkMagneticReferenceRange">
+              <div class="card-header">
+                <p-checkbox formControlName="checkRangeLimits" [binary]="true" inputId="magRefRange"></p-checkbox>
+                <label for="magRefRange" class="checkbox-text">Check Magnetic Reference Range</label>
+              </div>
+              @if (processConfigForm.get('checkMagneticReferenceRange.checkRangeLimits')?.value) {
+              <div class="card-body range-layout">
+                <div class="range-inputs">
+                  <div class="input-row">
+                    <span class="field-label">Low Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="lowLimit" />
+                      <span pInputGroupAddon>nT</span>
+                    </p-inputGroup>
+                  </div>
+                  <div class="input-row">
+                    <span class="field-label">High Limit</span>
+                    <p-inputGroup class="custom-limit-group">
+                      <input pInputText type="number" formControlName="highLimit" />
+                      <span pInputGroupAddon>nT</span>
+                    </p-inputGroup>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+
+            <div class="form-footer">
+              <button pButton label="Reset" class="reset-btn"
+                (click)="resetProcessConfigForm()"></button>
+              <button pButton label="Submit" class="submit-btn" (click)="submitProcessConfigForm()"></button>
+            </div>
+          </form>
+        </div>
+      </p-popover>
+    </div>
+
+    <div class="layout-select">
+      <p-select [options]="layoutOptions" [(ngModel)]="_commonService.selectedDashboardLayout" optionLabel="label"
+        optionValue="value" placeholder="Select View" [showClear]="false" (onChange)="onLayoutChange($event.value)"
+        styleClass="layout-dropdown">
+
+        <ng-template let-selected pTemplate="selectedItem">
+          <div class="layout-item">
+            <i [class]="selected?.icon"></i>
+            <span>{{ selected?.label }}</span>
+          </div>
+        </ng-template>
+
+        <ng-template let-option pTemplate="item">
+          <div class="layout-item">
+            <i [class]="option.icon"></i>
+            <span>{{ option.label }}</span>
+          </div>
+        </ng-template>
+
+      </p-select>
+    </div>
+
+  </div>
+</div>

@@ -1,1 +1,186 @@
-<p>sidebar works!</p>
+<!-- <div class="sidebar-wrapper">
+  <div class="sidebar-logo">
+    <img [src]="'icon.png'" alt="logo" />
+    <div class="title">
+      <h1 sidebar-h1>Survey QC</h1>
+      <span class="version">v{{ applicationVersion }}</span>
+    </div>
+  </div>
+
+  <div class="status">
+    <div class="server-status" [ngClass]="serverConnectionLight ? 'connected' : 'disconnected'">
+    </div>
+  </div>
+
+  <div class="survey-container">
+    <h3>Survey Count Summary</h3>
+
+    @for (item of [
+    { label: 'Total Surveys', value: surveyCounts.totalSurveys },
+    { label: 'Auto Approved', value: surveyCounts.totalAutoApprovedSurveys },
+    { label: 'User Approved', value: surveyCounts.totalUserApprovedSurveys },
+    { label: 'Auto Rejected', value: surveyCounts.totalAutoRejectedSurveys },
+    { label: 'User Rejected', value: surveyCounts.totalUserRejectedSurveys },
+    { label: 'Unknown', value: surveyCounts.totalUnknownSurveys }
+    ]; track item.label) {
+
+    <div class="survey-item">
+      <label>{{ item.label }}</label>
+      <span>{{ item.value }}</span>
+    </div>
+
+    }
+  </div>
+
+  <div class="survey-container">
+    <h3>Filters</h3>
+
+    <div class="filters">
+      <div class="field">
+        <label>Search by Rig / Vendor</label>
+        <input pInputText type="text" [(ngModel)]="_commonService.searchText"
+          (ngModelChange)="_commonService.applyFilters(true)" />
+      </div>
+
+      <div class="field">
+        <label>Minimum Auto Rejected Surveys</label>
+        <input pInputText type="number" [(ngModel)]="_commonService.minFilterByAutoRejectedSurveys"
+          (ngModelChange)="_commonService.applyFilters(true)" />
+      </div>
+
+      <div class="field">
+        <label>Survey Type</label>
+        <p-select [options]="_commonService.surveyTypeArr" optionLabel="key" optionValue="value" [filter]="true"
+          [(ngModel)]="_commonService.selectedSurveyType" (onChange)="_commonService.applyFilters(true)">
+        </p-select>
+      </div>
+
+      <div class="field">
+        <label>Vendor Type</label>
+        <p-select [options]="_commonService.vendorsArr" optionLabel="label" optionValue="value" [filter]="true"
+          [(ngModel)]="_commonService.selectedVendor" (onChange)="_commonService.applyFilters(true)">
+        </p-select>
+      </div>
+
+      <div class="field">
+        <label>Rig Start Date</label>
+        <p-datepicker [(ngModel)]="_commonService.startDate" [showTime]="true" dateFormat="yy-mm-dd"
+          (onSelect)="_commonService.applyFilters(true)">
+        </p-datepicker>
+      </div>
+
+      <div class="field">
+        <label>Rig End Date</label>
+        <p-datepicker [(ngModel)]="_commonService.endDate" [showTime]="true" dateFormat="yy-mm-dd"
+          (onSelect)="_commonService.applyFilters(true)">
+        </p-datepicker>
+      </div>
+
+      <button pButton type="button" label="Reset Filters" class="p-button-outlined" (click)="resetFilters()">
+      </button>
+
+    </div>
+  </div>
+
+  @if (simulationStatus && !_commonService.hideOtherInfo && !_commonService.isSidebarCollapsed) {
+  <div class="simulation-status">
+    Simulation Mode is On
+  </div>
+  }
+
+</div> -->
+
+<div class="sidebar-wrapper">
+  
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <img [src]="'icon.png'" alt="logo" />
+      <div class="title">
+        <h1 sidebar-h1>Survey QC</h1>
+        <span class="version">v{{ applicationVersion }}</span>
+      </div>
+    </div>
+
+    <div class="status">
+      <div class="server-status" [ngClass]="serverConnectionLight ? 'connected' : 'disconnected'">
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-body">
+    
+    <div class="survey-container">
+      <h3>Survey Count Summary</h3>
+      @for (item of [
+        { label: 'Total Surveys', value: surveyCounts.totalSurveys },
+        { label: 'Auto Approved', value: surveyCounts.totalAutoApprovedSurveys },
+        { label: 'User Approved', value: surveyCounts.totalUserApprovedSurveys },
+        { label: 'Auto Rejected', value: surveyCounts.totalAutoRejectedSurveys },
+        { label: 'User Rejected', value: surveyCounts.totalUserRejectedSurveys },
+        { label: 'Unknown', value: surveyCounts.totalUnknownSurveys }
+      ]; track item.label) {
+        <div class="survey-item">
+          <label>{{ item.label }}</label>
+          <span>{{ item.value }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="survey-container">
+      <h3>Filters</h3>
+      <div class="filters">
+        <div class="field">
+          <label>Search by Rig / Vendor</label>
+          <input pInputText type="text" [(ngModel)]="_commonService.searchText"
+            (ngModelChange)="_commonService.applyFilters(true)" />
+        </div>
+
+        <div class="field">
+          <label>Minimum Auto Rejected Surveys</label>
+          <input pInputText type="number" [(ngModel)]="_commonService.minFilterByAutoRejectedSurveys"
+            (ngModelChange)="_commonService.applyFilters(true)" />
+        </div>
+
+        <div class="field">
+          <label>Survey Type</label>
+          <p-select [options]="_commonService.surveyTypeArr" optionLabel="key" optionValue="value" [filter]="true"
+            [(ngModel)]="_commonService.selectedSurveyType" (onChange)="_commonService.applyFilters(true)">
+          </p-select>
+        </div>
+
+        <div class="field">
+          <label>Vendor Type</label>
+          <p-select [options]="_commonService.vendorsArr" optionLabel="label" optionValue="value" [filter]="true"
+            [(ngModel)]="_commonService.selectedVendor" (onChange)="_commonService.applyFilters(true)">
+          </p-select>
+        </div>
+
+        <div class="field">
+          <label>Rig Start Date</label>
+          <p-datepicker [(ngModel)]="_commonService.startDate" [showTime]="true" dateFormat="yy-mm-dd"
+            (onSelect)="_commonService.applyFilters(true)">
+          </p-datepicker>
+        </div>
+
+        <div class="field">
+          <label>Rig End Date</label>
+          <p-datepicker [(ngModel)]="_commonService.endDate" [showTime]="true" dateFormat="yy-mm-dd"
+            (onSelect)="_commonService.applyFilters(true)">
+          </p-datepicker>
+        </div>
+
+        <button pButton type="button" label="Reset Filters" class="p-button-outlined" (click)="resetFilters()">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (simulationStatus && !_commonService.hideOtherInfo) {
+    <div class="sidebar-footer">
+      <div class="simulation-status">
+        Simulation Mode is On
+      </div>
+    </div>
+  }
+
+</div>

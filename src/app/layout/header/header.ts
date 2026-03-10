@@ -22,8 +22,6 @@ import { ToastModule } from 'primeng/toast';
 import { ProcessConfiguration } from '../../models/WellBore/ProcessConfiguration';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { SelectModule } from 'primeng/select';
-// import { filter, take } from 'rxjs';
-// import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-header',
@@ -67,13 +65,6 @@ export class Header {
   public originalFacLimitsData: any;
   public isFacLimitsDropdownVisible: boolean = false;
 
-
-  // public emailConfigForm: FormGroup = this.fb.group({});
-  // public witsmlAuthForm: FormGroup = this.fb.group({});
-
-
-  // private readonly _destroyRef = inject(DestroyRef);
-
   public layoutOptions = [
     { label: 'Card', value: 'Card' },
     { label: 'Grid', value: 'Grid' },
@@ -81,10 +72,8 @@ export class Header {
   ];
 
   public ngOnInit(): void {
-    // this.loadEmailConfigForm()
     this.updateEmailConfigForm()
     this.checkWitsmlConnectionStatus()
-    // this.loadWitsmlAuthForms()
     this.loadFacLimitsForm()
     this.updateFacLimitsData()
     this.loadProcessConfigForm()

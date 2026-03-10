@@ -1,7 +1,6 @@
 @if (_commonService.selectedDashboardLayout === 'Grid') {
   <div class="dashboard-table">
     <div class="grid-container">
-      <!-- Header Row -->
       <div class="grid-header">
         <div class="grid-cell col-well-id">Well ID</div>
         <div class="grid-cell col-service">Service Company</div>
@@ -13,15 +12,12 @@
         <div class="grid-cell col-actions">Actions</div>
       </div>
 
-      <!-- Data Rows -->
       @for (well of _commonService.filteredWellBoreArr; track well.wellboreInfo?.wellboreId?.value) {
         <div class="grid-row">
-          <!-- Well ID -->
           <div class="grid-cell col-well-id">
             {{ well.wellboreInfo?.wellboreId?.value }}
           </div>
 
-          <!-- Service Company -->
           <div class="grid-cell col-service">
             <div class="service-container"
                  [pTooltip]="getAllServiceCompanyNames(well.wellboreInfo?.serviceCompanyInfos || [])" 
@@ -39,27 +35,22 @@
             </div>
           </div>
 
-          <!-- Last Survey Received -->
           <div class="grid-cell col-date">
             {{ _commonService.getFormattedDate(well.lastSurveyReceivedTime) | date: 'dd/MM/yy HH:mm:ss' }}
           </div>
 
-          <!-- Latitude -->
           <div class="grid-cell col-coord">
             {{ _commonService.formatLatitude(well.wellboreInfo?.latitude?.value) }}
           </div>
 
-          <!-- Longitude -->
           <div class="grid-cell col-coord">
             {{ _commonService.formatLongitude(well.wellboreInfo?.longitude?.value) }}
           </div>
 
-          <!-- Total Surveys -->
           <div class="grid-cell col-total">
             {{ well.totalSurveys }}
           </div>
 
-          <!-- Survey Summary -->
           <div class="grid-cell col-summary">
             @for (survey of well.processSummary; track survey.name) {
               <div class="survey-summary-item">
@@ -99,7 +90,6 @@
             }
           </div>
 
-          <!-- Actions -->
           <div class="grid-cell col-actions">
             <div class="table-actions">
               <p-button 

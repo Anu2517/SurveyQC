@@ -61,7 +61,6 @@ fac-limits-popover.p-popover {
   color: #e5e7eb !important;
 }
 
-/* ── Layout Select Dropdown Panel ───────────────────────────── */
 .p-select-overlay {
   background-color: #0d1117 !important;
   border: 1px solid #1e3a5f !important;
@@ -107,8 +106,6 @@ fac-limits-popover.p-popover {
   color: inherit;
 }
 
-
-/* email-configuration */
 .p-popover:has(.email-form) {
   background: #01121a !important;
   border: none !important;
@@ -135,14 +132,12 @@ fac-limits-popover.p-popover {
   flex: 1;
 }
 
-/* Ensure the root and layout containers use the same background as .main-content */
 app-root,
 .layout-container,
 .main-content {
   background-color: #000 !important;
 }
 
-/* Hide popover/overlay arrow triangles (PrimeNG appendTo="body") */
 .p-popover::before,
 .p-popover::after,
 .p-connected-overlay::before,
@@ -158,7 +153,6 @@ app-root,
   box-shadow: none !important;
 }
 
-/* Ensure popovers (including appended-to-body overlays) keep the dark theme background */
 .p-popover,
 .p-overlaypanel,
 .p-connected-overlay,
@@ -171,7 +165,6 @@ app-root,
   box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
 }
 
-/* Inputs inside popovers should keep dark backgrounds */
 .p-popover .p-inputtext,
 .p-popover input,
 .p-overlaypanel .p-inputtext,
@@ -181,7 +174,6 @@ app-root,
   color: #ffffff !important;
 }
 
-/* PrimeNG checkbox theming: dark box, spaced label, visible white tick */
 .p-checkbox {
   display: inline-flex !important;
   align-items: center !important;
@@ -217,4 +209,22 @@ app-root,
 .popover-container .p-checkbox .p-checkbox-box {
   background: #07151d !important;
   border: 1px solid #334155 !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;   
+  height: 6px;  
+}
+
+::-webkit-scrollbar-track {
+  background: #053b4d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #053b4d;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #053b4d;
 }

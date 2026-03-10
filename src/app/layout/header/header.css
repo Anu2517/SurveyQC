@@ -285,23 +285,6 @@
   gap: 4px;
 }
 
-.popover-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.popover-container::-webkit-scrollbar-track {
-  background: #01121a;
-}
-
-.popover-container::-webkit-scrollbar-thumb {
-  background: #053b4d;
-  border-radius: 4px;
-}
-
-.popover-container::-webkit-scrollbar-thumb:hover {
-  background: #0293c4;
-}
-
 .config-card {
   border: 1px solid #053b4d;
   background-color: #07111a;

@@ -111,15 +111,6 @@
   overflow-y: auto;
 }
 
-.provider-grid::-webkit-scrollbar {
-  width: 8px;
-}
-
-.provider-grid::-webkit-scrollbar-thumb {
-  background: #0c4f6e;
-  border-radius: 4px;
-}
-
 .provider-grid .chart-container {
   height: 450px;
 }

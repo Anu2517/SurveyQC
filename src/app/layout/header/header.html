@@ -64,7 +64,7 @@
           </div>
 
           <div class="emailform-btns">
-            <button pButton type="button" label="Reset" severity="secondary" (click)="emailConfigForm.reset()"></button>
+            <button pButton type="button" label="Reset" severity="secondary" class="reset-btn" (click)="emailConfigForm.reset()"></button>
             <button pButton type="button" label="Submit" (click)="submitEmailConfigForm()"
               [disabled]="emailConfigForm.invalid">
             </button>
@@ -159,14 +159,14 @@
               </button>
 
               <div class="right-btns">
-                <button pButton type="button" label="Reset" class="p-button-secondary" (click)="resetForm()">
+                <button pButton type="button" label="Reset" class="reset-btn" (click)="resetForm()">
                 </button>
 
                 <button pButton type="button" label="Test Connection" class="p-button-secondary" (click)="testConnection()"
                   [disabled]="!witsmlAuthForm.valid">
                 </button>
 
-                <button pButton type="button" label="Submit" (click)="submitForm()" [disabled]="!witsmlAuthForm.valid">
+                <button pButton type="button" label="Submit" class="submit-btn" (click)="submitForm()" [disabled]="!witsmlAuthForm.valid">
                 </button>
               </div>
 
@@ -279,7 +279,6 @@
               </div>
               @if (processConfigForm.get('usedMagneticReference.checkThreshold')?.value) {
               <div class="card-body range-layout">
-            >
                 <div class="range-inputs">
                   <div class="input-row">
                     <span class="field-label">Threshold</span>
@@ -300,7 +299,6 @@
               </div>
               @if (processConfigForm.get('usedDipReference.checkThreshold')?.value) {
               <div class="card-body range-layout">
-            >
                 <div class="range-inputs">
                   <div class="input-row">
                     <span class="field-label">Threshold</span>
@@ -320,8 +318,7 @@
                 <label for="decRef" class="checkbox-text">Declination Reference</label>
               </div>
               @if (processConfigForm.get('usedDeclinationReference.checkThreshold')?.value) {
-              <div class="card-body range-layout">
-          >
+                <div class="card-body range-layout">
                 <div class="range-inputs">
                   <div class="input-row">
                     <span class="field-label">Threshold</span>
@@ -341,7 +338,7 @@
                 <label for="resDepth" class="checkbox-text">Survey Resolution Depth</label>
               </div>
               @if (processConfigForm.get('surveyResolutionDepth.checkThreshold')?.value) {
-              <div class="card-body range-layout">>
+              <div class="card-body range-layout">
                 <div class="range-inputs">
                   <div class="input-row">
                     <span class="field-label">Threshold</span>
@@ -390,7 +387,6 @@
               </div>
               @if (processConfigForm.get('checkGravityReferenceRange.checkRangeLimits')?.value) {
               <div class="card-body range-layout">
->
                 <div class="range-inputs">
                   <div class="input-row">
                     <span class="field-label">Low Limit</span>

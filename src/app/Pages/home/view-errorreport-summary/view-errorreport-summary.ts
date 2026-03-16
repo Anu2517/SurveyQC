@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NgxEchartsDirective } from 'ngx-echarts';
@@ -18,23 +18,23 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './view-errorreport-summary.html',
   styleUrl: './view-errorreport-summary.css'
 })
-export class ViewErrorReportSummary implements OnInit {
+export class ViewErrorReportSummary implements OnInit, OnDestroy {
 
   public providerReports: ProviderReport[] = [];
 
-  private _communicationService = inject(CommunicationService);
-  public _commonService = inject(CommonService);
+  private communicationService = inject(CommunicationService);
+  public commonService = inject(CommonService);
   private router = inject(Router);
 
   dateForPrintView: Date = new Date();
 
   ngOnInit() {
-    this._commonService.isSidebarCollapsed = true;
+    this.commonService.isSidebarCollapsed = true;
     this.loadReport();
   }
 
   ngOnDestroy() {
-    this._commonService.isSidebarCollapsed = false;
+    this.commonService.isSidebarCollapsed = false;
   }
 
   goBack() {
@@ -106,7 +106,9 @@ export class ViewErrorReportSummary implements OnInit {
   }
 
   loadReport() {
-    this._communicationService.getErrorSummmary().subscribe((data: any) => {
+    showLoader(true, 'Loading Report');
+    this.communicationService.getErrorSummmary().subscribe((data: any) => {
+      showLoader(false);
       if (!data) return;
 
       const approvalMap = new Map<string, ProviderApproval>();
@@ -130,7 +132,7 @@ export class ViewErrorReportSummary implements OnInit {
             : '0.00';
 
           return {
-            providerName: this._commonService.formatName(provider),
+            providerName: this.commonService.formatName(provider),
             errors: filtered.map((e: ErrorItem) => ({
               label: this.getErrorLabel(e.surveyErrorEnum),
               count: e.count,
@@ -146,7 +148,7 @@ export class ViewErrorReportSummary implements OnInit {
               label: this.getDataMissingLabel((e as any).dataMissing)
             })),
             chartOption: this.createChartOption(
-              this._commonService.formatName(provider),
+              this.commonService.formatName(provider),
               filtered,
               total
             )

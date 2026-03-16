@@ -7,7 +7,6 @@ import { MessageService } from 'primeng/api';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { provideEchartsCore } from 'ngx-echarts';
-import * as echarts from 'echarts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,7 +21,6 @@ export const appConfig: ApplicationConfig = {
         preset: Aura
       }
     }),
-    provideEchartsCore({ echarts })
-
+    provideEchartsCore({ echarts: () => import('echarts') })
   ]
 };

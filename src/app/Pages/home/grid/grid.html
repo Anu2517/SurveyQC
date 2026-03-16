@@ -1,4 +1,4 @@
-@if (_commonService.selectedDashboardLayout === 'Grid') {
+@if (commonService.selectedDashboardLayout === 'Grid') {
   <div class="dashboard-table">
     <div class="grid-container">
       <div class="grid-header">
@@ -12,23 +12,23 @@
         <div class="grid-cell col-actions">Actions</div>
       </div>
 
-      @for (well of _commonService.filteredWellBoreArr; track well.wellboreInfo?.wellboreId?.value) {
+      @for (well of commonService.filteredWellBoreArr; track well.wellboreInfo?.wellboreId?.value) {
         <div class="grid-row">
           <div class="grid-cell col-well-id">
-            {{ well.wellboreInfo?.wellboreId?.value }}
+            {{ well.wellboreInfo.wellboreId.value }}
           </div>
 
           <div class="grid-cell col-service">
             <div class="service-container"
-                 [pTooltip]="getAllServiceCompanyNames(well.wellboreInfo?.serviceCompanyInfos || [])" 
+                 [pTooltip]="getAllServiceCompanyNames(well.wellboreInfo.serviceCompanyInfos || [])" 
                  tooltipPosition="top">
-              @if (well.wellboreInfo?.serviceCompanyInfos?.length === 1) {
+              @if (well.wellboreInfo.serviceCompanyInfos.length === 1) {
                 <span>
-                  {{ _commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0]?.name) }}
+                  {{ commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0].name) }}
                 </span>
-              } @else if (well.wellboreInfo?.serviceCompanyInfos?.length > 1) {
+              } @else if (well.wellboreInfo.serviceCompanyInfos.length > 1) {
                 <span class="truncate-text">
-                  {{ _commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0]?.name) }} +
+                  {{ commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0].name) }} +
                   {{ well.wellboreInfo.serviceCompanyInfos.length - 1 }}
                 </span>
               }
@@ -36,15 +36,15 @@
           </div>
 
           <div class="grid-cell col-date">
-            {{ _commonService.getFormattedDate(well.lastSurveyReceivedTime) | date: 'dd/MM/yy HH:mm:ss' }}
+            {{ commonService.getFormattedDate(well.lastSurveyReceivedTime) | date: 'dd/MM/yy HH:mm:ss' }}
           </div>
 
           <div class="grid-cell col-coord">
-            {{ _commonService.formatLatitude(well.wellboreInfo?.latitude?.value) }}
+            {{ commonService.formatLatitude(well.wellboreInfo.latitude.value) }}
           </div>
 
           <div class="grid-cell col-coord">
-            {{ _commonService.formatLongitude(well.wellboreInfo?.longitude?.value) }}
+            {{ commonService.formatLongitude(well.wellboreInfo.longitude.value) }}
           </div>
 
           <div class="grid-cell col-total">
@@ -56,7 +56,7 @@
               <div class="survey-summary-item">
                 <div class="survey-vendor-name">{{ survey.name }}</div>
                 <div class="survey-status-badges">
-                  <span class="status-badge status-check" [pTooltip]="'Total: ' + survey.totalSurveys">
+                  <span class="status-badge status-total" [pTooltip]="'Total: ' + survey.totalSurveys">
                     <img src="outline/check.png" alt="check" class="badge-icon">
                     {{ survey.totalSurveys }}
                   </span>
@@ -96,18 +96,18 @@
                 label="MSA" 
                 size="small" 
                 [pTooltip]="'Run MSA'" 
-                (onClick)="InitiateRunMSA(well)" 
+                (onClick)="initiateRunMSA(well)" 
                 styleClass="msa-btn" />
 
-              <span class="action-icon" (click)="_commonService.viewWellboreReport(well)" pTooltip="View Report">
+              <span class="action-icon" (click)="commonService.viewWellboreReport(well)" pTooltip="View Report">
                 <img src="outline/file-pdf.png" alt="PDF">
               </span>
               
-              <span class="action-icon" (click)="_commonService.viewWellboreCharts(well.wellboreInfo.wellboreId.value)" pTooltip="View Chart">
+              <span class="action-icon" (click)="commonService.viewWellboreCharts(well.wellboreInfo.wellboreId.value!)" pTooltip="View Chart">
                 <img src="outline/area-chart.png" alt="Chart">
               </span>
 
-              <span class="action-icon" (click)="_commonService.viewWellboreSurveys(well.wellboreInfo.wellboreId.value)" pTooltip="View Surveys">
+              <span class="action-icon" (click)="commonService.viewWellboreSurveys(well.wellboreInfo.wellboreId.value!)" pTooltip="View Surveys">
                 <img src="outline/eye.png" alt="View">
               </span>
             </div>

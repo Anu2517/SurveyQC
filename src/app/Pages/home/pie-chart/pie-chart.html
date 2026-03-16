@@ -11,10 +11,10 @@
     @for (data of pieChartData; track data.serviceCompany; let i = $index) {
     <div class="pie">
         <h3 class="chart-heading">
-            {{ _commonService.formatName(data.serviceCompany) }}
+            {{ commonService.formatName(data.serviceCompany) }}
             - ( Total Surveys - {{ data.totalSurveys }} )
         </h3>
-        <div echarts [options]="_allPieChartOption[i]" class="chart" (chartClick)="onChartClick()">
+        <div echarts [options]="allPieChartOption[i]" class="chart" (chartClick)="onChartClick()">
         </div>
     </div>
     }

@@ -1,11 +1,23 @@
 @import "primeicons/primeicons.css";
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   height: 100vh;
   width: 100vw;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 * {
@@ -26,19 +38,10 @@ html, body {
   overflow: visible !important;
 }
 
-fac-limits-popover.p-popover {
-  background: #01121a !important;
-  border: none !important;
-  border-radius: 4px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
-  padding: 0 !important;
-}
-
 .fac-limits-popover .p-popover-content {
   background: #01121a !important;
   padding: 0 !important;
 }
-
 
 .fac-toast .p-toast-message {
   background: #1f2933;
@@ -48,18 +51,14 @@ fac-limits-popover.p-popover {
 }
 
 .fac-toast .p-toast-summary,
-.fac-toast .p-toast-detail {
-  color: #e5e7eb !important;
-}
+.fac-toast .p-toast-detail { color: #e5e7eb !important; }
 
 .fac-toast .p-toast-message-success .p-toast-message-icon {
   color: #22c55e !important;
   font-size: 1.2rem;
 }
 
-.fac-toast .p-toast-icon-close {
-  color: #e5e7eb !important;
-}
+.fac-toast .p-toast-icon-close { color: #e5e7eb !important; }
 
 .p-select-overlay {
   background-color: #0d1117 !important;
@@ -82,9 +81,7 @@ fac-limits-popover.p-popover {
   border-bottom: 1px solid #1a2a3a !important;
 }
 
-.p-select-overlay .p-select-option:last-child {
-  border-bottom: none !important;
-}
+.p-select-overlay .p-select-option:last-child { border-bottom: none !important; }
 
 .p-select-overlay .p-select-option:hover,
 .p-select-overlay .p-select-option.p-focus {
@@ -134,9 +131,7 @@ fac-limits-popover.p-popover {
 
 app-root,
 .layout-container,
-.main-content {
-  background-color: #000 !important;
-}
+.main-content { background-color: #000 !important; }
 
 .p-popover::before,
 .p-popover::after,
@@ -211,20 +206,40 @@ app-root,
   border: 1px solid #334155 !important;
 }
 
-::-webkit-scrollbar {
-  width: 6px;   
-  height: 6px;  
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0e1416; }
+::-webkit-scrollbar-thumb { background: #053b4d; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #053b4d; }
+
+/* Datepicker panel - dark theme */
+.dark-datepicker-panel {
+  background: #071923 !important;
+  border: 1px solid #0c4f6e !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45) !important;
 }
 
-::-webkit-scrollbar-track {
-  background: #053b4d;
+.dark-datepicker-panel * { color: #ffffff !important; }
+
+.dark-datepicker-panel .p-datepicker-header {
+  background: #0c3a53 !important;
+  border-bottom: 1px solid #0c4f6e !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #053b4d;
-  border-radius: 10px;
+.dark-datepicker-panel .p-datepicker-calendar td > span:hover { background: #0c4f6e !important; }
+.dark-datepicker-panel .p-datepicker-calendar td.p-datepicker-today > span { border: 1px solid #1a8fc1 !important; }
+.dark-datepicker-panel .p-datepicker-calendar td > span.p-highlight { background: #1a8fc1 !important; }
+.dark-datepicker-panel .p-datepicker-calendar th { color: #9ec2da !important; }
+
+.dark-datepicker-panel .p-timepicker,
+.dark-datepicker-panel .p-datepicker-buttonbar {
+  background: #071923 !important;
+  border-top: 1px solid #0c4f6e !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #053b4d;
+.dark-datepicker-panel .p-timepicker button:hover { background: #0c4f6e !important; }
+
+.dark-datepicker-panel .p-datepicker-buttonbar .p-button {
+  background: #0c3a53 !important;
+  border: 1px solid #0c4f6e !important;
 }

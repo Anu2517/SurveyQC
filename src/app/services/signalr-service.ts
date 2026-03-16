@@ -1,9 +1,14 @@
-import { EventEmitter, Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { MessageService } from 'primeng/api';
+import { LoggerService } from './logger.service';
 
+/**
+ * SignalR service for real-time communication with backend
+ * Manages WebSocket connection and event subscriptions
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -14,21 +19,27 @@ export class SignalrService {
   public isServerConnectedSubject = new BehaviorSubject<boolean>(false);
   isServerConnected$ = this.isServerConnectedSubject.asObservable();
 
-  public surveyCountNofitication: EventEmitter<any> = new EventEmitter();
-  public wellboreProcessState: EventEmitter<any> = new EventEmitter();
-  public wellboreSurveysCounts: EventEmitter<any> = new EventEmitter();
+  public surveyCountNofitication = new Subject<any>();
+  public wellboreProcessState = new Subject<any>();
+  public wellboreSurveysCounts = new Subject<any>();
 
   private connection!: HubConnection;
   public signalRUrl: string = environment.signalRUrl;
 
   private reconnecting: boolean = false;
 
-  constructor(private _message: MessageService) {
+  constructor(
+    private message: MessageService,
+    private logger: LoggerService
+  ) {
     this.createConnection();
     this.startConnection();
-    // this.signalRConnector();
   }
 
+  /**
+   * Create SignalR connection instance
+   * @private
+   */
   private createConnection() {
     this.isServerConnectedSubject.next(true);
     this.connection = new HubConnectionBuilder()
@@ -36,21 +47,27 @@ export class SignalrService {
       .build();
 
     this.connection.onclose(error => {
-      console.log("Disconnected. Reconnecting...");
+      this.logger.warn('SignalR disconnected. Reconnecting...');
       this.handleDisconnect();
     });
   }
 
+  /**
+   * Handle connection disconnection and schedule reconnection
+   * @private
+   */
   private handleDisconnect() {
-    console.log("Handling disconnection...");
+    this.logger.info('Handling SignalR disconnection');
     this.connectionEstablishedSubject.next(false);
     this.isServerConnectedSubject.next(false);
-    localStorage.setItem('isServerConnected', 'false');
-    this.reconnecting = false;
 
     setTimeout(() => this.startConnection(), 60000);
   }
 
+  /**
+   * Start SignalR connection
+   * @private
+   */
   private async startConnection(): Promise<void> {
     if (this.connection.state !== HubConnectionState.Disconnected || this.reconnecting) {
       return;
@@ -59,68 +76,61 @@ export class SignalrService {
     this.reconnecting = true;
 
     try {
-      console.log("Starting connection...");
+      this.logger.info('Starting SignalR connection');
       this.connection.serverTimeoutInMilliseconds = 100000;
       await this.connection.start();
-      console.log("Connection established.");
+      this.logger.info('SignalR connection established');
       this.setupConnection();
     } catch (error) {
-      console.error('Error while establishing connection:', error);
+      this.logger.error('Error establishing SignalR connection:', error);
       this.handleDisconnect();
     } finally {
       this.reconnecting = false;
     }
   }
 
-  private signalRConnector() {
-    setInterval(() => {
-      if (!this.isConnected()) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 5000);
-
-        this.startConnection();
-      }
-    }, 5000);
-  }
-
-  private isConnected(): boolean {
-    return this.connection != null && this.connection.state === HubConnectionState.Connected;
-  }
-
+  /**
+   * Setup connection state and event listeners
+   * @private
+   */
   private setupConnection() {
     this.connectionEstablishedSubject.next(true);
     this.isServerConnectedSubject.next(true);
-    localStorage.setItem('isServerConnected', 'true');
-
     this.setupEventListeners();
   }
 
+  /**
+   * Setup SignalR event listeners
+   * @private
+   */
   private setupEventListeners() {
     
     this.connection.on("OnSurveyCount", count => {
-      this.surveyCountNofitication.emit(count)
+      this.surveyCountNofitication.next(count);
     });
 
     this.connection.on("OnWellboreProcessState", wellState => {
-      this.wellboreProcessState.emit(wellState)
+      this.wellboreProcessState.next(wellState);
     });
 
     this.connection.on("SystemSummaryInformation", (wellboreId: string, value: any) => {
-      const obj = {
-        wellboreId,
-        value
-      };
-      this.wellboreSurveysCounts.emit(obj);
+      const obj = { wellboreId, value };
+      this.wellboreSurveysCounts.next(obj);
     });
     this.connection.on("OnSurveysUpdated",wellId =>{
-      this.showNotification('success', 'MSA Updated for '+ wellId, '')
-      console.log('OnSurveysUpdated : -',wellId);
+      this.showNotification('success', 'MSA Updated for '+ wellId, '');
+      this.logger.debug('OnSurveysUpdated received', wellId);
     });
   }
 
+  /**
+   * Show notification using PrimeNG toast
+   * @param status - Notification severity
+   * @param title - Notification title
+   * @param subtitle - Notification detail
+   */
   showNotification(status:"success" | "info" | "warning" | "error" | "blank", title:string, subtitle:string){
-    this._message.add({
+    this.message.add({
     severity: status,
     summary: title,
     detail: subtitle

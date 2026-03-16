@@ -2,7 +2,7 @@
   <button class="back-btn" (click)="goBack()">
     <i class="pi pi-arrow-left"></i>
   </button>
-  <h2 class="title">{{ selectedView }}</h2>
+  <h2 class="title">{{ selectedView() }}</h2>
   <button 
     pButton 
     type="button" 
@@ -14,10 +14,10 @@
   
   <p-select
     [options]="viewOptions"
-    [(ngModel)]="selectedView"
+    [ngModel]="selectedView()"
+    (ngModelChange)="onViewChange($event)"
     optionLabel="label"
     optionValue="value"
-    (onChange)="onViewChange()"
     panelStyleClass="view-selector-panel"
     class="view-selector"
     appendTo="body">
@@ -25,7 +25,7 @@
 </div>
 
 <div class="chart-wrapper">
-  @if (selectedView === 'Overall Summary') {
+  @if (selectedView() === 'Overall Summary') {
     <div class="chart-container">
       <div class="chart-heading">Overall Summary</div>
       <div echarts [options]="chartOption" class="chart"></div>

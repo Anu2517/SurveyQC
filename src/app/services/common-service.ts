@@ -1,17 +1,14 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Subject, switchMap } from 'rxjs';
 import { CommunicationService } from './communication-service';
 import { SignalrService } from './signalr-service';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { finalize } from 'rxjs';
 import { SurveyStatus } from '../models/WellBore/SurveyStatus';
 import { FacLimit } from '../models/WellBore/FacLimit';
 import { ProcessConfiguration } from '../models/WellBore/ProcessConfiguration';
-import { WellboreInfo } from '../models/WellBore/WellBoreInfoModel';
-// import * as XLSX from 'xlsx';
-// import { saveAs } from 'file-saver';
-// import { NzNotificationService } from 'ng-zorro-antd/notification';
-
+import { ProcessSummary, ServiceCompanyInfo, WellboreInfo } from '../models/WellBore/WellBoreInfoModel';
+import { LoggerService } from './logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,50 +16,47 @@ import { WellboreInfo } from '../models/WellBore/WellBoreInfoModel';
 export class CommonService {
 
   public isSidebarCollapsed: boolean = false;
-  // public wellBoreArr: Array<any> = new Array<any>(); // wells
-  wellBoreArr: any[] = [];
-  public filteredWellBoreArr: Array<any> = new Array<any>();
+  wellBoreArr: WellboreInfo[] = [];
+  public filteredWellBoreArr: WellboreInfo[] = [];
   public dashboardLayout = ["Card", "Grid", "Map"]
   public pieChartStatus: boolean = false;
-  public errorSummaryStatus: boolean = false;
   public simulationStatus: boolean = false;
 
   // "Panel"
   public selectedDashboardLayout: string = "Card"
   public isAutoRefreshEnable: boolean = false;
   public surveyStatusEnum = SurveyStatus;
-  public surveyTypeArr: Array<any> = Array<any>();
+  public surveyTypeArr: { key: string; value: number }[] = [];
   public selectedVendor: string | null = "All Vendors";
-  public vendorsArr: Array<any> = new Array<any>()
+  public vendorsArr: { value: string; label: string }[] = [];
   public searchText: string = '';
   public selectedSurveyType: number = -1
-  public emitPieChartStatus: EventEmitter<boolean> = new EventEmitter<boolean>()
-  public emitWitsmlStatus: EventEmitter<boolean> = new EventEmitter<boolean>()
-  public emitSelectedWellboreId: EventEmitter<string> = new EventEmitter<string>()
-  public emitSelectedWellboreIdForCharts: EventEmitter<string> = new EventEmitter<string>()
-  public emitSelectedWellboreIdForReport: EventEmitter<string> = new EventEmitter<string>()
-  public emitErrorSummaryReport: EventEmitter<string> = new EventEmitter<string>()
+  public emitWitsmlStatus = new Subject<boolean>();
+  public emitSelectedWellboreId = new Subject<string>();
+  public emitSelectedWellboreIdForCharts = new Subject<string>();
   public showWitsmlConnectionStatusMessage: string = ''
   public facConfiguration!: FacLimit;
   public hideOtherInfo: boolean = false
-  public isFilterApplied: EventEmitter<boolean> = new EventEmitter<boolean>()
+  public isFilterApplied = new Subject<boolean>();
   public processConfigData!: ProcessConfiguration;
   public lastSelectedWellboreId: string | null = null;
 
   public minFilterByAutoRejectedSurveys: number | null = null;
-  // public startDate: Date = new Date()
-  // public endDate: Date = new Date()
   public startDate: Date | null = null;
   public endDate: Date | null = null;
-  AutoRejectedSurveys: number | null = null;
 
-  constructor(private _communicationService: CommunicationService, private _signalrService: SignalrService, private router: Router, private _message: MessageService) {
+  constructor(
+    private _communicationService: CommunicationService,
+    private signalrService: SignalrService,
+    private router: Router,
+    private message: MessageService,
+    private logger: LoggerService
+  ) {
     this.emitWitsmlStatus.subscribe(data => {
       if (data) {
         this.generateSurveyType()
         this.startProcessing()
         this.updateWellBoreState()
-        this.getMonitorWellBores();
         this.showWitsmlConnectionStatusMessage = ''
       }
       else {
@@ -71,31 +65,33 @@ export class CommonService {
     })
   }
 
+  /**
+   * Start processing wellbores from WITSML
+   */
   public startProcessing(): void {
-    debugger;
-    // showLoader(true, 'Processing Wells');
-
+    showLoader(true, 'Processing Wells');
     this._communicationService.startProcessing()
-      .pipe(
-        // finalize(() => showLoader(false))
-      )
-      .subscribe(
-        () => {
+      .subscribe({
+        next: () => {
+          showLoader(false)
           this.getMonitorWellBores();
         },
-        (err: unknown) => {
-          console.error('Start processing failed:', err);
+        error: (err: unknown) => {
+          showLoader(false);
+          this.logger.error('Start processing failed:', err);
         }
-      );
+      });
   }
 
 
+  /**
+   * Fetch monitored wellbores and update state
+   */
   getMonitorWellBores() {
-    //showLoader(true, 'Fetching Wells...');
-    this._communicationService.getMonitoredWellbores().subscribe(
-      (data: WellboreInfo[]) => {
-      //  showLoader(false);
-
+    showLoader(true, 'Fetching Wells...');
+    this._communicationService.getMonitoredWellbores().subscribe({
+      next: (data: WellboreInfo[]) => {
+        showLoader(false);
         this.wellBoreArr = data
           .map(well => ({
             ...well,
@@ -109,21 +105,32 @@ export class CommonService {
             (a.wellboreInfo?.wellId?.value ?? '')
               .localeCompare(b.wellboreInfo?.wellId?.value ?? '')
           );
-        console.log('wellBoreArr', this.wellBoreArr);
+        this.logger.debug('Wellbore data loaded', this.wellBoreArr);
         this.updateWellboreData();
       },
-      (err) => {
-        //showLoader(false);
+      error: (err) => {
+        showLoader(false);
+        this.logger.error('Failed to fetch monitored wellbores', err);
       }
-    );
+    });
   }
 
 
-  updateWellBoreState() {
-    this._signalrService.wellboreProcessState.subscribe(data => {
-
-      this._communicationService.getWellboreState(data).subscribe(wellbore => {
-        let wellboreIndex = this.wellBoreArr.findIndex(x => x.wellboreInfo.wellboreId.value === data);
+  /**
+   * Subscribe to SignalR wellbore state updates
+   */
+  updateWellBoreState(): void {
+    this.signalrService.wellboreProcessState
+      .pipe(
+        switchMap(data =>
+          this._communicationService.getWellboreState(data)
+        )
+      )
+      .subscribe((wellbore: WellboreInfo) => {
+        const wellboreId = wellbore?.wellboreInfo?.wellboreId?.value;
+        const wellboreIndex = this.wellBoreArr.findIndex(
+          x => x.wellboreInfo.wellboreId.value === wellboreId
+        );
 
         const updatedWellbore = {
           ...wellbore,
@@ -142,37 +149,74 @@ export class CommonService {
 
         this.updateWellboreData();
       });
+  }
+
+  /**
+   * Transform process summary from API format to application format
+   * @param processSummary - Process summary from API (object or array)
+   * @returns Array of process summary objects
+   */
+  transformProcessSummary(
+    processSummary: Record<string, ProcessSummary> | ProcessSummary[] | null | undefined
+  ): ProcessSummary[] {
+
+    if (!processSummary) return [];
+
+    // If API already returned array
+    if (Array.isArray(processSummary)) {
+      return processSummary;
+    }
+
+    // If API returned object
+    return Object.keys(processSummary).map((key) => {
+      const item = processSummary[key];
+
+      return {
+        name: key,
+        totalSurveys: item?.totalSurveys ?? 0,
+        totalAutoRejectedSurveys: item?.totalAutoRejectedSurveys ?? 0,
+        totalAutoApprovedSurveys: item?.totalAutoApprovedSurveys ?? 0,
+        totalUserApprovedSurveys: item?.totalUserApprovedSurveys ?? 0,
+        totalUserRejectedSurveys: item?.totalUserRejectedSurveys ?? 0,
+        totalUnknownSurveys: item?.totalUnknownSurveys ?? 0
+      };
     });
   }
 
-  transformProcessSummary(processSummary: any): any[] {
-    if (!processSummary) return [];
+  /**
+   * Transform service company information from API format
+   * @param serviceCompanyInfos - Service company info from API
+   * @returns Array of service company info objects
+   */
+  transformServiceCompanyInfos(
+    serviceCompanyInfos: Record<string, ServiceCompanyInfo> | ServiceCompanyInfo[] | null | undefined
+  ): ServiceCompanyInfo[] {
 
-    return Object.keys(processSummary).map(key => ({
-      name: key,
-      totalSurveys: processSummary[key]?.totalSurveys ?? 0,
-      totalAutoRejectedSurveys: processSummary[key]?.totalAutoRejectedSurveys ?? 0,
-      totalAutoApprovedSurveys: processSummary[key]?.totalAutoApprovedSurveys ?? 0,
-      totalUserApprovedSurveys: processSummary[key]?.totalUserApprovedSurveys ?? 0,
-      totalUserRejectedSurveys: processSummary[key]?.totalUserRejectedSurveys ?? 0,
-      totalUnknownSurveys: processSummary[key]?.totalUnknownSurveys ?? 0
-    }));
-  }
-
-  transformServiceCompanyInfos(serviceCompanyInfos: any): any[] {
-    debugger;
     if (!serviceCompanyInfos) return [];
 
-    return Object.keys(serviceCompanyInfos).map(key => ({
-      name: key,
-      serviceCompany: serviceCompanyInfos[key]?.serviceCompany ?? null,
-      azimuthReference: serviceCompanyInfos[key]?.azimuthReference ?? null,
-      magneticDeclinationUsed: serviceCompanyInfos[key]?.magneticDeclinationUsed ?? null,
-      gridConvergenceUsed: serviceCompanyInfos[key]?.gridConvergenceUsed ?? null,
-      azimuthVerticalSection: serviceCompanyInfos[key]?.azimuthVerticalSection ?? null
-    }));
+    if (Array.isArray(serviceCompanyInfos)) {
+      return serviceCompanyInfos;
+    }
+
+    return Object.keys(serviceCompanyInfos).map((key) => {
+      const item = serviceCompanyInfos[key];
+
+      return {
+        name: key,
+        serviceCompany: item?.serviceCompany ?? null,
+        azimuthReference: item?.azimuthReference ?? null,
+        magneticDeclinationUsed: item?.magneticDeclinationUsed ?? null,
+        gridConvergenceUsed: item?.gridConvergenceUsed ?? null,
+        azimuthVerticalSection: item?.azimuthVerticalSection ?? null
+      };
+    });
   }
 
+  /**
+   * Format vendor/service company name for display
+   * @param name - Raw name from API
+   * @returns Formatted name
+   */
   formatName(name: string): string {
     return name
       .replace(/^[^_]+_/, '')
@@ -181,13 +225,16 @@ export class CommonService {
       .trim();
   }
 
+  /**
+   * Update wellbore data and refresh filters/vendors
+   */
   updateWellboreData() {
     this.filteredWellBoreArr = [...this.wellBoreArr];
 
     const uniqueVendors = new Map<string, string>();
 
-    this.wellBoreArr.forEach((well: any) => {
-      well.processSummary?.forEach((info: any) => {
+    this.wellBoreArr.forEach((well: WellboreInfo) => {
+      well.processSummary?.forEach((info: ProcessSummary) => {
         if (info?.name) {
           const lowerCaseName = info.name.toLowerCase();
 
@@ -207,6 +254,9 @@ export class CommonService {
     this.applyFilters();
   }
 
+  /**
+   * Generate survey type dropdown options from enum
+   */
   generateSurveyType() {
     this.surveyTypeArr = [
       { key: 'All Surveys', value: -1 },
@@ -216,6 +266,9 @@ export class CommonService {
     ];
   }
 
+  /**
+   * Calculate date range from filtered wellbores
+   */
   updateTime() {
     let filterDates = this.filteredWellBoreArr
       .map(rig => new Date(rig.lastSurveyReceivedTime))
@@ -229,12 +282,16 @@ export class CommonService {
 
   }
 
+  /**
+   * Apply all active filters to wellbore data
+   * @param fromUser - Whether filter was triggered by user action
+   */
   applyFilters(fromUser: boolean = false) {
     this.filteredWellBoreArr = [...this.wellBoreArr];
 
     if (this.selectedVendor && this.selectedVendor !== 'All Vendors') {
       this.filteredWellBoreArr = this.filteredWellBoreArr.filter(well =>
-        well.processSummary?.some((summary: any) => summary?.name === this.selectedVendor)
+        well.processSummary?.some((summary: ProcessSummary) => summary?.name === this.selectedVendor)
       );
     }
 
@@ -245,7 +302,7 @@ export class CommonService {
           return false;
         }
 
-        return wellbore.processSummary.some((summary: any) => {
+        return wellbore.processSummary.some((summary: ProcessSummary) => {
           const getValue = (field: number | undefined): number => (field ? Number(field) : 0);
 
           switch (this.selectedSurveyType) {
@@ -302,37 +359,24 @@ export class CommonService {
           return false;
         }
 
-        return well.processSummary.some((summary: any) => {
+        return well.processSummary.some((summary: ProcessSummary) => {
           const autoRejectedValue = Number(summary.totalAutoRejectedSurveys) || 0;
           return !isNaN(autoRejectedValue) && autoRejectedValue >= minAutoRejected;
         });
       });
     }
 
-    if (this.minFilterByAutoRejectedSurveys != null) {
-
-      const minValue = this.minFilterByAutoRejectedSurveys;
-
-      this.filteredWellBoreArr = this.filteredWellBoreArr.filter(well => {
-        if (!well.processSummary || well.processSummary.length === 0) {
-          return false;
-        }
-
-        return well.processSummary.some((summary: any) => {
-          const autoRejectedValue = Number(summary.totalAutoRejectedSurveys) || 0;
-          return autoRejectedValue >= minValue;
-        });
-      });
-
-    }
-
-    this.filteredWellBoreArr.sort((a, b) => a.wellboreInfo.wellId.value.localeCompare(b.wellboreInfo.wellId.value));
-
-    this.isFilterApplied.emit(fromUser ? false : true);
-
+    this.filteredWellBoreArr.sort((a, b) =>
+      (a.wellboreInfo.wellId.value ?? '')
+        .localeCompare(b.wellboreInfo.wellId.value ?? '')
+    );
+    this.isFilterApplied.next(!fromUser);
   }
 
-
+  /**
+   * Generate random UUID v4
+   * @returns UUID string
+   */
   randomUUID(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
@@ -341,7 +385,7 @@ export class CommonService {
     });
   }
 
-  getFormattedDate(dateTime: any): Date | null {
+  getFormattedDate(dateTime: string | Date | null): Date | null {
     if (dateTime) {
       return dateTime ? new Date(dateTime) : null;
     }
@@ -350,14 +394,14 @@ export class CommonService {
     }
   }
 
-  formatLatitude(latitude: string | number): string {
+  formatLatitude(latitude: string | number | null): string {
     if (latitude === null || latitude === undefined) return '-';
     const lat = typeof latitude === 'string' ? parseFloat(latitude) : latitude;
     const latDirection = lat >= 0 ? 'N' : 'S';
     return `${Math.abs(lat).toFixed(4)}° ${latDirection}`;
   }
 
-  formatLongitude(longitude: string | number): string {
+  formatLongitude(longitude: string | number | null): string {
     if (longitude === null || longitude === undefined) return '-';
     const lon = typeof longitude === 'string' ? parseFloat(longitude) : longitude;
     const longDirection = lon >= 0 ? 'E' : 'W';
@@ -365,72 +409,43 @@ export class CommonService {
   }
 
 
+  /**
+   * Navigate to wellbore surveys view
+   * @param wellboreId - Wellbore identifier
+   */
   viewWellboreSurveys(wellboreId: string): void {
     this.router.navigateByUrl('view-surveys').then(() => {
       this.lastSelectedWellboreId = wellboreId;
-      this.emitSelectedWellboreId.emit(wellboreId);
+      this.emitSelectedWellboreId.next(wellboreId);
     });
   }
 
+  /**
+   * Navigate to wellbore charts view
+   * @param wellboreId - Wellbore identifier
+   */
   viewWellboreCharts(wellboreId: string): void {
     this.router.navigateByUrl('view-charts').then(() => {
-      this.emitSelectedWellboreIdForCharts.emit(wellboreId);
+      this.emitSelectedWellboreIdForCharts.next(wellboreId);
     });
   }
 
-  viewWellboreReport(well: any): void {
-    this.router.navigateByUrl('view-report').then(() => {
-      this.emitSelectedWellboreIdForReport.emit(well);
-    });
+  /**
+   * Navigate to wellbore report view
+   * @param well - Wellbore data
+   */
+  viewWellboreReport(well: WellboreInfo): void {
+    this.router.navigateByUrl('view-report');
   }
 
-  viewVendorBasedErrorReport() {
-    this.router.navigateByUrl('view-errorreport-summary').then(() => {
-      this.emitErrorSummaryReport.emit();
-    })
-  }
-
-  // public exportToExcel(fileName: string): void {
-  //   const dataToExport = this.filteredWellBoreArr.map((well) => {
-  //     const summary = well.processSummary?.[0] || {};
-  //     return {
-  //       'Well ID': well.wellboreInfo?.wellboreId?.value,
-  //       'Service Company': well.wellboreInfo?.serviceCompanyInfos?.map(sc => sc.name).join(', '),
-  //       'Last Survey Received': this.getFormattedDateTime(well.lastSurveyReceivedTime),
-  //       'Latitude': this.formatLatitude(well.wellboreInfo.latitude.value),
-  //       'Longitude': this.formatLongitude(well.wellboreInfo.longitude.value),
-  //       'Total Surveys': well.totalSurveys,
-  //       'Survey Summary': well.processSummary.map(survey => survey.name).join(', '),
-  //       'Auto Approved': summary.totalAutoApprovedSurveys,
-  //       'User Approved': summary.totalUserApprovedSurveys,
-  //       'Auto Rejected': summary.totalAutoRejectedSurveys,
-  //       'Total User Rejected': summary.totalUserRejectedSurveys,
-  //       'Unknown Surveys': summary.totalUnknownSurveys,
-  //     };
-  //   });
-  //   const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
-  //   const columnWidth = 18
-  //   ws['!cols'] = new Array(Object.keys(dataToExport[0]).length).fill({ wch: columnWidth });
-  //   const wb: XLSX.WorkBook = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-  //   const wbout: ArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  //   saveAs(new Blob([wbout], { type: 'application/octet-stream' }), `${fileName}.xlsx`);
-  // }
-
-  getFormattedDateTime(date: any): string {
-    if (!date) return '';
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = String(d.getFullYear() % 100).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-  }
-
+  /**
+   * Show notification toast
+   * @param status - Notification type
+   * @param title - Notification title
+   * @param subtitle - Notification detail message
+   */
   showNotification(status: 'success' | 'info' | 'warning' | 'error' | 'blank', title: string, subtitle: string) {
-    this._message.add({
+    this.message.add({
       severity: status === 'blank' ? undefined : status,
       summary: title,
       detail: subtitle

@@ -488,6 +488,11 @@
   padding: 6px 12px !important;
 }
 
+.reset-btn:hover {
+  border-color: #00aed9 !important;
+  color: #00aed9 !important;
+}
+
 .submit-btn {
   background: #0293c4 !important;
   border: none !important;

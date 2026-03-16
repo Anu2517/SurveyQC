@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { CommonService } from '../../services/common-service';
 import { SignalrService } from '../../services/signalr-service';
@@ -10,67 +11,64 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { SelectModule } from 'primeng/select';
+import { MessageModule } from 'primeng/message';
+import { requestStatus } from '../../utils/request-status-utils';
 
 @Component({
   selector: 'app-sidebar',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     InputTextModule,
     SelectModule,
     DatePickerModule,
-    ButtonModule
+    ButtonModule,
+    MessageModule
   ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
 export class Sidebar implements OnInit {
 
-  public serverConnectionLight: boolean = false;
+  public commonService = inject(CommonService);
+  private signalRService = inject(SignalrService);
+  private communicationService = inject(CommunicationService);
+
+  public serverConnectionLight = toSignal(this.signalRService.isServerConnected$, { initialValue: false });
   public environment = environment;
   public applicationVersion!: string;
   public simulationStatus: boolean = false;
   public surveyCounts: SystemSummaryInfo = new SystemSummaryInfo();
-
-  constructor(
-    public _commonService: CommonService,
-    private signalRService: SignalrService,
-    private _communicationService: CommunicationService
-  ) { }
+  surveyStatus = requestStatus();
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     this.getVersion();
     this.getSurveysSummary();
-    this.subscribeToConnectionStatus();
-    this._communicationService.getSimulationModeStatus().subscribe(data => {
-      this._commonService.simulationStatus = data;
-      this.simulationStatus = data;
-    });
+    this.communicationService.getSimulationModeStatus()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(data => {
+        this.commonService.simulationStatus = data;
+        this.simulationStatus = data;
+      });
   }
 
   getVersion(): void {
-    this._communicationService.getVersion().subscribe((data: any) => {
-      this.applicationVersion = data;
-    });
-  }
-
-  subscribeToConnectionStatus(): void {
-    this.signalRService.isServerConnected$.subscribe((data: boolean) => {
-      this.serverConnectionLight = data;
-    });
+    this.communicationService.getVersion()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data: any) => {
+        this.applicationVersion = data;
+      });
   }
 
   resetFilters(): void {
-    this._commonService.selectedVendor = 'All Vendors';
-    this._commonService.selectedSurveyType = -1;
-    this._commonService.startDate = null;
-    this._commonService.endDate = null;
-    this._commonService.searchText = '';
-    this._commonService.minFilterByAutoRejectedSurveys = null;
-    this._commonService.filteredWellBoreArr = [
-      ...this._commonService.wellBoreArr
-    ];
+    this.commonService.selectedVendor = 'All Vendors';
+    this.commonService.selectedSurveyType = -1;
+    this.commonService.startDate = null;
+    this.commonService.endDate = null;
+    this.commonService.searchText = '';
+    this.commonService.minFilterByAutoRejectedSurveys = null;
+    this.commonService.applyFilters();
   }
 
   updateSurveyCounts(data: SystemSummaryInfo): void {
@@ -82,20 +80,25 @@ export class Sidebar implements OnInit {
     this.surveyCounts.totalSurveys = data?.totalSurveys || 0;
   }
 
-  // simulationModeStatus(): void {
-  //   this._communicationService.getSimulationModeStatus().subscribe(data => {
-  //     this._commonService.simulationStatus = data; 
-  //     this.simulationStatus = data;                
-  //   });
-  // }
-
-  getSurveysSummary(): void {
-    this._communicationService.getSummaryInformation().subscribe(
-      (data: SystemSummaryInfo) => {
-        if (data) {
-          this.updateSurveyCounts(data);
-        }
+getSurveysSummary(): void {
+  this.surveyStatus.loading();
+  this.communicationService.getSummaryInformation().subscribe({
+    next: (data: SystemSummaryInfo) => {
+      if (data) {
+        this.updateSurveyCounts(data);
+        this.surveyStatus.success(data);
       }
-    );
-  }
+    },
+    error: (err) => {
+      this.surveyStatus.error(err);
+      this.commonService.showNotification(
+        'error',
+        'Survey Summary Error',
+        this.surveyStatus.errorMessage() || 
+        'Failed to load summary information. Please try again later.'
+      );
+    }
+  });
+
+}
 }

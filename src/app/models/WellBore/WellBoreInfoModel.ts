@@ -14,7 +14,7 @@ export interface WellboreDetails {
   customerName: ValueUnit;
   latitude: ValueUnitNumeric;
   longitude: ValueUnitNumeric;
-  serviceCompanyInfos: ServiceCompanyInfos;
+  serviceCompanyInfos: ServiceCompanyInfo[];
 }
 
 export interface ValueUnit {
@@ -35,10 +35,6 @@ export interface ProcessSummary {
   totalUserRejectedSurveys: number;
   totalUnknownSurveys: number;
   name: string;
-}
-
-export interface ServiceCompanyInfos {
-  [key: string]: ServiceCompanyInfo;
 }
 
 export interface ServiceCompanyInfo {

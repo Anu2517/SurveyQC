@@ -1,7 +1,7 @@
 <div class="header-container">
   <p-toast position="top-right" styleClass="fac-toast" [baseZIndex]="9999"></p-toast>
   <div class="left-header">
-    <button pButton type="button" [icon]="_commonService.isSidebarCollapsed ? 'pi pi-bars' : 'pi pi-chevron-left'"
+    <button pButton type="button" [icon]="commonService.isSidebarCollapsed ? 'pi pi-bars' : 'pi pi-chevron-left'"
       (click)="updateSidebar()" class="p-button-rounded p-button-text sidebar-toggle-btn">
     </button>
     <img src="halliburton-logo.png" alt="Logo" class="header-logo" />
@@ -9,9 +9,9 @@
 
   <div class="right-header">
 
-    @if (_commonService.selectedDashboardLayout === 'Map') {
+    @if (commonService.selectedDashboardLayout === 'Map') {
     <div class="auto-refresh">
-      <p-checkbox [(ngModel)]="_commonService.isAutoRefreshEnable" [binary]="true" inputId="autoRefresh">
+      <p-checkbox [(ngModel)]="commonService.isAutoRefreshEnable" [binary]="true" inputId="autoRefresh">
       </p-checkbox>
 
       <label for="autoRefresh">Auto Refresh</label>
@@ -20,7 +20,7 @@
 
     <div class="header-stat">
       <span>Total Wells</span>
-      <b>{{ _commonService.wellBoreArr.length }}</b>
+      <b>{{ commonService.wellBoreArr.length }}</b>
     </div>
 
     <div class="header-stat">
@@ -65,7 +65,7 @@
 
           <div class="emailform-btns">
             <button pButton type="button" label="Reset" severity="secondary" class="reset-btn" (click)="emailConfigForm.reset()"></button>
-            <button pButton type="button" label="Submit" (click)="submitEmailConfigForm()"
+            <button pButton type="button" label="Submit" (click)="submitEmailConfigForm()" class="submit-btn"
               [disabled]="emailConfigForm.invalid">
             </button>
           </div>
@@ -101,7 +101,7 @@
               <input pInputText type="password" formControlName="password" />
             </div>
 
-            @if (showAdvancedSettings) {
+            @if (showAdvancedSettings()) {
             <div class="mt-3">
 
               <div class="field">
@@ -155,7 +155,7 @@
             <div class="btns-section">
 
               <button pButton type="button" class="advanced-btn" (click)="toggleAdvancedSettings()">
-                {{ showAdvancedSettings ? 'Hide Advanced Settings' : 'Show Advanced Settings' }}
+                {{ showAdvancedSettings() ? 'Hide Advanced Settings' : 'Show Advanced Settings' }}
               </button>
 
               <div class="right-btns">
@@ -179,9 +179,9 @@
     </div>
 
     <div class="chart-toggle">
-      <button pButton type="button" [icon]="!_commonService.pieChartStatus ? 'pi pi-chart-bar' : 'pi pi-eye-slash'"
+      <button pButton type="button" [icon]="!commonService.pieChartStatus ? 'pi pi-chart-bar' : 'pi pi-eye-slash'"
         class="p-button-rounded p-button-text chart" (click)="routeToVendorCharts()"
-        [pTooltip]="!_commonService.pieChartStatus ? 'Show Vendors Survey Chart' : 'Hide Vendors Survey Charts'"
+        [pTooltip]="!commonService.pieChartStatus ? 'Show Vendors Survey Chart' : 'Hide Vendors Survey Charts'"
         tooltipPosition="bottom">
       </button>
 
@@ -473,7 +473,7 @@
     </div>
 
     <div class="layout-select">
-      <p-select [options]="layoutOptions" [(ngModel)]="_commonService.selectedDashboardLayout" optionLabel="label"
+      <p-select [options]="layoutOptions" [(ngModel)]="commonService.selectedDashboardLayout" optionLabel="label"
         optionValue="value" placeholder="Select View" [showClear]="false" (onChange)="onLayoutChange($event.value)"
         styleClass="layout-dropdown">
 

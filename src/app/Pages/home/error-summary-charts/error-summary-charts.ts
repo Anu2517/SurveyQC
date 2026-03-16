@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { CommunicationService } from '../../../services/communication-service';
 import { CommonService } from '../../../services/common-service';
@@ -27,10 +27,10 @@ type ChartView = typeof CHART_VIEWS[keyof typeof CHART_VIEWS];
   templateUrl: './error-summary-charts.html',
   styleUrl: './error-summary-charts.css',
 })
-export class ErrorSummaryCharts {
+export class ErrorSummaryCharts implements OnInit, OnDestroy {
   public chartOption: EChartsOption = {};
   public totalSurveys: number = 0;
-  public selectedView: ChartView = CHART_VIEWS.OVERALL;
+  public selectedView = signal<ChartView>(CHART_VIEWS.OVERALL);
   public providerCharts: { title: string; option: EChartsOption }[] = [];
 
   public viewOptions = [
@@ -41,25 +41,26 @@ export class ErrorSummaryCharts {
   private rawData: ErrorSummaryData | null = null;
 
   public router = inject(Router);
-  private _communicationService = inject(CommunicationService);
-  public _commonService = inject(CommonService);
+  private communicationService = inject(CommunicationService);
+  public commonService = inject(CommonService);
 
   ngOnInit() {
-    this._commonService.isSidebarCollapsed = true;
+    this.commonService.isSidebarCollapsed = true;
     this.loadChart();
   }
 
   ngOnDestroy() {
-    this._commonService.isSidebarCollapsed = false;
+    this.commonService.isSidebarCollapsed = false;
   }
 
   goBack() {
     this.router.navigate(['Home']);
   }
 
-  onViewChange() {
+  onViewChange(view: ChartView) {
+    this.selectedView.set(view);
     if (!this.rawData) return;
-    if (this.selectedView === 'Overall Summary') {
+    if (this.selectedView() === CHART_VIEWS.OVERALL) {
       this.buildOverallChart(this.rawData);
     } else {
       this.buildPerProviderCharts(this.rawData);
@@ -76,7 +77,7 @@ export class ErrorSummaryCharts {
   }
 
   loadChart() {
-    this._communicationService.getErrorSummmary().subscribe((data) => {
+    this.communicationService.getErrorSummmary().subscribe((data) => {
       const summary = data as ErrorSummaryData;
       if (!summary?.errorSummary) return;
       this.rawData = summary;
@@ -96,8 +97,8 @@ export class ErrorSummaryCharts {
       const filtered = errors.filter((e: ErrorItem) => e.count > 0);
       const total = filtered.reduce((sum: number, e: ErrorItem) => sum + e.count, 0);
       return {
-        title: this._commonService.formatName(provider),
-        option: this.createChartOption(this._commonService.formatName(provider), filtered, total)
+        title: this.commonService.formatName(provider),
+        option: this.createChartOption(this.commonService.formatName(provider), filtered, total)
       };
     }).filter(p => p.option);
   }

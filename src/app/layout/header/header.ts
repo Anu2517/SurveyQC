@@ -1,7 +1,8 @@
-import { Component, DestroyRef, inject, ViewEncapsulation } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonService } from '../../services/common-service';
 import { CommunicationService } from '../../services/communication-service';
 import { SignalrService } from '../../services/signalr-service';
+import { LoggerService } from '../../services/logger.service';
 import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -14,7 +15,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { PasswordModule } from 'primeng/password';
 import { PopoverModule } from 'primeng/popover';
-import { WitsmlConnection } from '../../models/WellBore/WitsmlConnection ';
+import { WitsmlConnection } from '../../models/WellBore/WitsmlConnection';
 import { Router } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { FacLimit } from '../../models/WellBore/FacLimit';
@@ -22,6 +23,9 @@ import { ToastModule } from 'primeng/toast';
 import { ProcessConfiguration } from '../../models/WellBore/ProcessConfiguration';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { SelectModule } from 'primeng/select';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+const DEFAULT_WITSML_TIMEOUT = 60000;
 
 @Component({
   selector: 'app-header',
@@ -41,29 +45,27 @@ import { SelectModule } from 'primeng/select';
     SelectModule
   ],
   templateUrl: './header.html',
-  styleUrl: './header.css',
-  encapsulation: ViewEncapsulation.None
+  styleUrl: './header.css'
 })
-export class Header {
-  public _commonService = inject(CommonService);
-  public _communicationService = inject(CommunicationService);
-  private _signalrService = inject(SignalrService);
-  private _message = inject(MessageService);
+export class Header implements OnInit {
+  public commonService = inject(CommonService);
+  private communicationService = inject(CommunicationService);
+  private signalrService = inject(SignalrService);
+  private message = inject(MessageService);
+  private logger = inject(LoggerService);
   public environment = environment;
-  private _router = inject(Router);
+  private router = inject(Router);
   private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
   public surveyQueue: number = 0;
-  public isEmailConfigurationDropdownVisible: boolean = false;
-  public showAdvancedSettings: boolean = false;
-  public isWitsmlDropdownVisible: boolean = false;
+  public showAdvancedSettings = signal<boolean>(false);
   public isWitsmlConnectionActive: boolean = false;
   public witsmlConnection!: WitsmlConnection;
   public facLimitsForm!: FormGroup;
   public processConfigForm!: FormGroup;
   private originalProcessConfigData!: ProcessConfiguration;
   public originalFacLimitsData: any;
-  public isFacLimitsDropdownVisible: boolean = false;
 
   public layoutOptions = [
     { label: 'Card', value: 'Card' },
@@ -72,40 +74,44 @@ export class Header {
   ];
 
   public ngOnInit(): void {
-    this.updateEmailConfigForm()
-    this.checkWitsmlConnectionStatus()
-    this.loadFacLimitsForm()
-    this.updateFacLimitsData()
-    this.loadProcessConfigForm()
+    this.updateEmailConfigForm();
+    this.checkWitsmlConnectionStatus();
+    this.loadFacLimitsForm();
+    this.updateFacLimitsData();
+    this.loadProcessConfigForm();
     this.loadProcessConfigurationData();
+    // Subscribe once to survey count stream; never re-subscribe on WITSML reconnect
+    this.updateSurveyCount();
 
-    this._commonService.emitWitsmlStatus.subscribe((data: boolean) => {
-      if (data) {
-        this.getSurveyQueue()
-        this.updateSurveyCount()
-      }
-    })
-
+    this.commonService.emitWitsmlStatus
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data: boolean) => {
+        if (data) {
+          this.getSurveyQueue();
+        }
+      });
   }
 
-  getSurveyQueue() {
-    this._communicationService.getSurveyQueue().subscribe((data: number) => {
-      this.surveyQueue = data
-    })
+  getSurveyQueue(): void {
+    this.communicationService.getSurveyQueue().pipe(take(1)).subscribe((data: number) => {
+      this.surveyQueue = data;
+    });
   }
 
-  updateSurveyCount() {
-    this._signalrService.surveyCountNofitication.subscribe((data: number) => {
-      this.surveyQueue = data
-    })
+  updateSurveyCount(): void {
+    this.signalrService.surveyCountNofitication
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data: number) => {
+        this.surveyQueue = data;
+      });
   }
 
   updateSidebar() {
-    this._commonService.isSidebarCollapsed = !this._commonService.isSidebarCollapsed
+    this.commonService.isSidebarCollapsed = !this.commonService.isSidebarCollapsed
   }
 
   showNotification(type: 'success' | 'error', title: string, message: string): void {
-    this._message.add({
+    this.message.add({
       severity: type,
       summary: title,
       detail: message
@@ -116,7 +122,7 @@ export class Header {
     url: ['', [Validators.required, Validators.pattern(/^(http|https):\/\/[^ "]+$/)]],
     userName: ['', Validators.required],
     password: ['', Validators.required],
-    timeout: [60000, Validators.required],
+    timeout: [DEFAULT_WITSML_TIMEOUT, Validators.required],
     version: [1, Validators.required],
     acceptInvalidCertificate: [false],
     proxyAddress: [''],
@@ -136,8 +142,7 @@ export class Header {
   });
 
   updateEmailConfigForm(): void {
-    this.isEmailConfigurationDropdownVisible = false;
-    this._communicationService.getEmailConfiguration()
+    this.communicationService.getEmailConfiguration()
       .pipe(take(1))
       .subscribe({
         next: (data: EmailConfiguration) => {
@@ -155,55 +160,54 @@ export class Header {
           this.emailConfigForm.updateValueAndValidity();
         },
         error: (err) => {
-          console.error('Failed to load email config', err);
+          this.logger.error('Failed to load email config', err);
         }
       });
   }
 
   submitEmailConfigForm(): void {
 
-    if (this.emailConfigForm.invalid) {
-      this.emailConfigForm.markAllAsTouched();
-      return;
-    }
-
-    this.isEmailConfigurationDropdownVisible = false;
-    // showLoader(true, 'Updating Email Configuration');
-
-    this._communicationService
-      .updateEmailConfiguration(this.emailConfigForm.value)
-      .pipe(
-      // finalize(() => showLoader(false))
-    )
-      .subscribe({
-        next: () => {
-          this.emailConfigForm.markAsPristine();
-          // this.facLimitsForm.updateValueAndValidity();
-          this.showNotification("success", 'Email configuration updated', '');
-        },
-        error: () => {
-          this.showNotification("error", 'Email configuration failed to update', '');
-        }
-      });
+  if (this.emailConfigForm.invalid) {
+    this.emailConfigForm.markAllAsTouched();
+    return;
   }
+
+  showLoader(true, 'Updating Email Configuration');
+
+  this.communicationService
+    .updateEmailConfiguration(this.emailConfigForm.getRawValue() as EmailConfiguration)
+    .pipe(
+      finalize(() => showLoader(false))
+    )
+    .subscribe({
+      next: () => {
+        this.emailConfigForm.markAsPristine();
+        this.showNotification("success", 'Email configuration updated', '');
+      },
+      error: () => {
+        this.showNotification("error", 'Email configuration failed to update', '');
+      }
+    });
+}
 
   toggleAdvancedSettings() {
-    this.showAdvancedSettings = !this.showAdvancedSettings;
+    this.showAdvancedSettings.update(value => !value);
   }
 
-  getWitsmlConnectionStatus() {
-    this._communicationService.getWitsmlConnection().subscribe((data: WitsmlConnection) => {
-      this.witsmlConnection = data
-      this.setFormData(data)
-
-    })
+  getWitsmlConnectionStatus(): void {
+    this.communicationService.getWitsmlConnection()
+      .pipe(take(1))
+      .subscribe((data: WitsmlConnection) => {
+        this.witsmlConnection = data;
+        this.setFormData(data);
+      });
   }
 
   private buildWitsmlPayload() {
     const formValues = { ...this.witsmlAuthForm.value };
 
     return {
-      Id: this.witsmlConnection?.id || this._commonService.randomUUID(),
+      Id: this.witsmlConnection?.id || this.commonService.randomUUID(),
       URL: formValues.url,
       Username: formValues.userName,
       Password: formValues.password,
@@ -229,7 +233,7 @@ export class Header {
       url: data.url ?? '',
       userName: data.username ?? '',
       password: data.password ?? '',
-      timeout: data.timeout ?? 60000,
+      timeout: data.timeout ?? DEFAULT_WITSML_TIMEOUT,
       version: data.version ?? 1,
       acceptInvalidCertificate: data.acceptInvalidCertificate ?? false,
       proxyAddress: data.proxyAddress ?? '',
@@ -244,27 +248,24 @@ export class Header {
     this.witsmlAuthForm.markAsUntouched();
   }
 
-  checkWitsmlConnectionStatus() {
-    // showLoader(true, 'Validating WITSML Configuration...')
-    this._communicationService.isWitsmlConnectionValid().subscribe(
-      (data: boolean) => {
-        this._commonService.emitWitsmlStatus.emit(data);
-        if (data) {
-          this.isWitsmlConnectionActive = data;
-          this.getWitsmlConnectionStatus();
-          // showLoader(false);
+  checkWitsmlConnectionStatus(): void {
+    this.communicationService.isWitsmlConnectionValid()
+      .pipe(take(1))
+      .subscribe({
+        next: (data: boolean) => {
+          this.commonService.emitWitsmlStatus.next(data);
+          if (data) {
+            this.isWitsmlConnectionActive = data;
+            this.getWitsmlConnectionStatus();
+          }
+        },
+        error: () => {
+          this.commonService.emitWitsmlStatus.next(false);
         }
-      },
-      (err) => {
-        // showLoader(false);
-        this._commonService.emitWitsmlStatus.emit(false);
-      }
-    );
+      });
   }
 
   submitForm(): void {
-    this.isWitsmlDropdownVisible = false;
-
     if (this.witsmlAuthForm.invalid) {
       this.witsmlAuthForm.markAllAsTouched();
       this.showNotification('error', 'Validation Error', 'Please fill out the form correctly.');
@@ -273,13 +274,13 @@ export class Header {
 
     // showLoader(true, 'Processing WITSML Configuration...');
 
-    this._communicationService
+    this.communicationService
       .updateWitsmlConnection(this.buildWitsmlPayload())
       // .pipe(finalize(() => showLoader(false)))
       .subscribe({
         next: (response: boolean) => {
           if (response) {
-            this._commonService.emitWitsmlStatus.emit(true);
+            this.commonService.emitWitsmlStatus.next(true);
             this.showNotification('success', 'Success', 'WITSML connection updated successfully!');
           }
         },
@@ -290,8 +291,6 @@ export class Header {
   }
 
   testConnection(): void {
-    this.isWitsmlDropdownVisible = false;
-
     if (this.witsmlAuthForm.invalid) {
       this.witsmlAuthForm.markAllAsTouched();
       this.showNotification('error', 'Validation Error', 'Please fill out the form correctly.');
@@ -300,7 +299,7 @@ export class Header {
 
     // showLoader(true, 'Verifying WITSML Configuration...');
 
-    this._communicationService
+    this.communicationService
       .testWitsmlConnection(this.buildWitsmlPayload())
       // .pipe(finalize(() => showLoader(false)))
       .subscribe({
@@ -312,7 +311,7 @@ export class Header {
           }
         },
         error: (error) => {
-          console.error('API error:', error);
+          this.logger.error('API error:', error);
           this.showNotification('error', 'Error', 'An error occurred while testing the WITSML connection.');
         }
       });
@@ -326,17 +325,15 @@ export class Header {
   }
 
   routeToVendorCharts(): void {
-    this._router.navigateByUrl('vendors-charts')
+    this.router.navigateByUrl('vendors-charts')
   }
 
   routeToErrorSummary() {
-    this._router.navigate(['error-summary']);
+    this.router.navigate(['error-summary']);
   }
 
   allowOnlyNumbers(event: KeyboardEvent): void {
-    const pattern = /[0-9.]/;
-    const inputChar = String.fromCharCode(event.charCode);
-    if (!pattern.test(inputChar)) {
+    if (!/[0-9.]/.test(event.key)) {
       event.preventDefault();
     }
   }
@@ -352,13 +349,13 @@ export class Header {
   }
 
   updateFacLimitsData(): void {
-    this._communicationService.getFacLimits().subscribe({
+    this.communicationService.getFacLimits().subscribe({
       next: (data: FacLimit) => {
         if (!data) {
           return;
         }
 
-        this._commonService.facConfiguration = data;
+        this.commonService.facConfiguration = data;
 
         const thresholds = this.mapToThresholds(data);
         this.facLimitsForm.patchValue(thresholds, { emitEvent: false });
@@ -366,7 +363,7 @@ export class Header {
         this.facLimitsForm.markAsPristine();
       },
       error: (err) => {
-        console.error('Failed to fetch FAC Limits:', err);
+        this.logger.error('Failed to fetch FAC Limits:', err);
       }
     });
   }
@@ -386,7 +383,7 @@ export class Header {
   }
 
   submitFacLimits(): void {
-    this.isFacLimitsDropdownVisible = false;
+    showLoader(true, 'Updating FAC Limits');
 
     const values = this.facLimitsForm.value as {
       azimuthQCLimits: number;
@@ -397,30 +394,31 @@ export class Header {
     };
 
     const updatedFacLimits: FacLimit = {
-      ...this._commonService.facConfiguration,
+      ...this.commonService.facConfiguration,
       azimuthQCLimits: {
-        ...this._commonService.facConfiguration.azimuthQCLimits,
+        ...this.commonService.facConfiguration.azimuthQCLimits,
         threshold: values.azimuthQCLimits
       },
       inclinationQCLimits: {
-        ...this._commonService.facConfiguration.inclinationQCLimits,
+        ...this.commonService.facConfiguration.inclinationQCLimits,
         threshold: values.inclinationQCLimits
       },
       bTotalQCLimits: {
-        ...this._commonService.facConfiguration.bTotalQCLimits,
+        ...this.commonService.facConfiguration.bTotalQCLimits,
         threshold: values.bTotalQCLimits
       },
       gTotalQCLimits: {
-        ...this._commonService.facConfiguration.gTotalQCLimits,
+        ...this.commonService.facConfiguration.gTotalQCLimits,
         threshold: values.gTotalQCLimits
       },
       dipQCLimits: {
-        ...this._commonService.facConfiguration.dipQCLimits,
+        ...this.commonService.facConfiguration.dipQCLimits,
         threshold: values.dipQCLimits
       },
     };
 
-    this._communicationService.updateFacLimits(updatedFacLimits)
+    this.communicationService.updateFacLimits(updatedFacLimits)
+    .pipe(finalize(() => showLoader(false)))
       .subscribe({
         next: () => {
           this.showNotification('success', 'FAC Limits updated', '');
@@ -428,7 +426,7 @@ export class Header {
           this.facLimitsForm.markAsPristine();
         },
         error: (err) => {
-          console.error('FAC Limits update failed:', err);
+          this.logger.error('FAC Limits update failed:', err);
           this.showNotification('error', 'FAC Limits failed to update', '');
         }
       });
@@ -505,7 +503,7 @@ export class Header {
   }
 
   private loadProcessConfigurationData(): void {
-    this._communicationService.getProcessConfiguration()
+    this.communicationService.getProcessConfiguration()
       .subscribe({
         next: (data: ProcessConfiguration) => {
           if (!data) return;
@@ -514,29 +512,7 @@ export class Header {
           this.processConfigForm.markAsPristine();
         },
         error: (err) => {
-          console.error('Failed to load process configuration', err);
-        }
-      });
-  }
-
-  submitProcessConfiguration(): void {
-    if (this.processConfigForm.invalid) {
-      this.processConfigForm.markAllAsTouched();
-      return;
-    }
-
-    const payload: ProcessConfiguration =
-      this.processConfigForm.value as ProcessConfiguration;
-
-    this._communicationService
-      .updateProcessConfiguration(payload)
-      .subscribe({
-        next: () => {
-          this.showNotification('success', 'Process configuration updated', '');
-          this.processConfigForm.markAsPristine();
-        },
-        error: () => {
-          this.showNotification('error', 'Failed to update process configuration', '');
+          this.logger.error('Failed to load process configuration', err);
         }
       });
   }
@@ -549,93 +525,13 @@ export class Header {
 
     const payload: ProcessConfiguration = this.processConfigForm.value;
 
-    this._communicationService.updateProcessConfiguration(payload)
+    this.communicationService.updateProcessConfiguration(payload)
       .subscribe({
         next: () => {
           this.showNotification('success', 'Process configuration updated', '');
         },
         error: () => {
           this.showNotification('error', 'Update failed', '');
-        }
-      });
-  }
-
-  updateProcessConfigForm(): void {
-    this._communicationService
-      .getProcessConfiguration()
-      .subscribe({
-        next: (data: ProcessConfiguration) => {
-          if (!data) return;
-
-          this._commonService.processConfigData = data;
-
-          this.processConfigForm.patchValue({
-
-            autoRejectSurveys: data.autoRejectSurveys,
-            allowAllWellbores: data.allowAllWellbores,
-            autoApproveMissingGBSurveys: data.autoApproveMissingGBSurveys,
-
-            usedDeclinationReference: {
-              checkThreshold: data.usedDeclinationReference?.checkThreshold ?? false,
-              threshold: data.usedDeclinationReference?.threshold ?? 0,
-              unit: data.usedDeclinationReference?.unit ?? 'dega'
-            },
-
-            usedMagneticReference: {
-              checkThreshold: data.usedMagneticReference?.checkThreshold ?? false,
-              threshold: data.usedMagneticReference?.threshold ?? 0,
-              unit: data.usedMagneticReference?.unit ?? 'nT'
-            },
-
-            usedDipReference: {
-              checkThreshold: data.usedDipReference?.checkThreshold ?? false,
-              threshold: data.usedDipReference?.threshold ?? 0,
-              unit: data.usedDipReference?.unit ?? 'dega'
-            },
-
-            surveyResolutionDepth: {
-              checkThreshold: data.surveyResolutionDepth?.checkThreshold ?? false,
-              threshold: data.surveyResolutionDepth?.threshold ?? 0,
-              unit: data.surveyResolutionDepth?.unit ?? 'ft'
-            },
-
-            checkGravityRange: {
-              checkRangeLimits: data.checkGravityRange?.checkRangeLimits ?? false,
-              lowLimit: data.checkGravityRange?.lowLimit ?? 0,
-              highLimit: data.checkGravityRange?.highLimit ?? 0,
-              unit: data.checkGravityRange?.unit ?? 'g'
-            },
-
-            checkGravityReferenceRange: {
-              checkRangeLimits: data.checkGravityReferenceRange?.checkRangeLimits ?? false,
-              lowLimit: data.checkGravityReferenceRange?.lowLimit ?? 0,
-              highLimit: data.checkGravityReferenceRange?.highLimit ?? 0,
-              unit: data.checkGravityReferenceRange?.unit ?? 'g'
-            },
-
-            checkMagneticRange: {
-              checkRangeLimits: data.checkMagneticRange?.checkRangeLimits ?? false,
-              lowLimit: data.checkMagneticRange?.lowLimit ?? 0,
-              highLimit: data.checkMagneticRange?.highLimit ?? 0,
-              unit: data.checkMagneticRange?.unit ?? 'nT'
-            },
-
-            checkMagneticReferenceRange: {
-              checkRangeLimits: data.checkMagneticReferenceRange?.checkRangeLimits ?? false,
-              lowLimit: data.checkMagneticReferenceRange?.lowLimit ?? 0,
-              highLimit: data.checkMagneticReferenceRange?.highLimit ?? 0,
-              unit: data.checkMagneticReferenceRange?.unit ?? 'nT'
-            }
-
-          });
-
-          this.createOriginalCopyOfProcessConfig(data);
-
-          this.processConfigForm.markAsPristine();
-          this.processConfigForm.updateValueAndValidity();
-        },
-        error: (err) => {
-          console.error('Failed to load process configuration', err);
         }
       });
   }
@@ -654,8 +550,8 @@ export class Header {
 
 
   onLayoutChange(layout: string): void {
-    this._commonService.selectedDashboardLayout = layout;
-    this._commonService.applyFilters(true);
+    this.commonService.selectedDashboardLayout = layout;
+    this.commonService.applyFilters(true);
     if (layout === 'Map') {
     }
   }

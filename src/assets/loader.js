@@ -1,8 +1,6 @@
 (function () {
 
-  if (document.getElementById('global-loader')) return;
-
-  const loaderElement = document.createElement('div');
+  const loaderElement = document.getElementById('global-loader') || document.createElement('div');
   loaderElement.id = 'global-loader';
   loaderElement.style.display = 'none';
   loaderElement.style.position = 'fixed';
@@ -16,8 +14,12 @@
   loaderElement.style.alignItems = 'center';
   loaderElement.style.color = 'white';
   loaderElement.style.fontSize = '20px';
-  loaderElement.style.display = 'flex';
+  // loaderElement.style.display = 'flex';
   loaderElement.style.flexDirection = 'column';
+
+  if (!loaderElement.parentNode) {
+    document.body.appendChild(loaderElement);
+  }
 
   const spinner = document.createElement('div');
   spinner.style.border = '4px solid rgba(255, 255, 255, 0.84)';
@@ -27,10 +29,11 @@
   spinner.style.height = '40px';
   spinner.style.animation = 'spin 1s linear infinite';
 
-  const messageElement = document.createElement('div');
+  const messageElement = document.getElementById('loader-message') || document.createElement('div');
   messageElement.id = 'loader-message';
   messageElement.style.marginTop = '10px';
 
+  loaderElement.innerHTML = '';
   loaderElement.appendChild(spinner);
   loaderElement.appendChild(messageElement);
 
@@ -42,13 +45,12 @@
     }
   `;
   document.head.appendChild(style);
-  document.body.appendChild(loaderElement);
 
-  window.showLoader = function (show, message = 'Loading...') {
-    // if (!loaderElement || !messageElement) {
-    //   console.error('Loader elements not found');
-    //   return;
-    // }
+   window.showLoader = function (show, message = 'Loading...') {
+    if (!loaderElement || !messageElement) {
+      console.error('Loader elements not found');
+      return;
+    }
 
     if (show) {
       messageElement.textContent = message;

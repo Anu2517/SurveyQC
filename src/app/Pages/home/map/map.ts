@@ -1,4 +1,5 @@
-import { Component, ViewChild, TemplateRef, ViewContainerRef, EmbeddedViewRef } from '@angular/core';
+import { Component, ViewChild, TemplateRef, ViewContainerRef, EmbeddedViewRef, ElementRef, DestroyRef, inject, AfterViewInit, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
@@ -6,14 +7,22 @@ import { CommonService } from '../../../services/common-service';
 import { CommunicationService } from '../../../services/communication-service';
 import { ProcessSummary, WellboreInfo } from '../../../models/WellBore/WellBoreInfoModel';
 
+const DEFAULT_MAP_CENTER: L.LatLngExpression = [24.0, 45.0];
+const DEFAULT_MAP_ZOOM = 6;
+const MAP_MIN_ZOOM = 1;
+const MAP_MAX_ZOOM = 15;
+const MAP_RESIZE_DELAY = 100;
+
 @Component({
   selector: 'app-map',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './map.html',
   styleUrl: './map.css'
 })
-export class Map {
+export class Map implements OnInit, AfterViewInit {
+
+  @ViewChild('mapContainer', { static: true })
+  mapContainer!: ElementRef<HTMLDivElement>;
 
   @ViewChild('popupTemplate', { static: true }) popupTemplate!: TemplateRef<any>;
   @ViewChild('markerTemplate', { static: true }) markerTemplate!: TemplateRef<any>;
@@ -22,21 +31,21 @@ export class Map {
   public mapInstance!: L.Map;
   public popupRig: WellboreInfo | null = null;
   private markerClusterGroup!: L.MarkerClusterGroup;
-
-  constructor(
-    public _commonService: CommonService,
-    private _communicationService: CommunicationService,
-    private _viewContainerRef: ViewContainerRef
-  ) { }
+  private destroyRef = inject(DestroyRef);
+  public commonService = inject(CommonService);
+  private communicationService = inject(CommunicationService);
+  private viewContainerRef = inject(ViewContainerRef);
 
   ngOnInit(): void {
-    this._commonService.isFilterApplied.subscribe((data: any) => {
-      if (this._commonService.selectedDashboardLayout === 'Map' && data == false) {
-        this.reinitializeMap();
-      } else if (this._commonService.selectedDashboardLayout === 'Map' && this._commonService.isAutoRefreshEnable) {
-        this.reinitializeMap();
-      }
-    });
+    this.commonService.isFilterApplied
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data: any) => {
+        if (this.commonService.selectedDashboardLayout === 'Map' && data == false) {
+          this.reinitializeMap();
+        } else if (this.commonService.selectedDashboardLayout === 'Map' && this.commonService.isAutoRefreshEnable) {
+          this.reinitializeMap();
+        }
+      });
   }
 
   ngAfterViewInit(): void {
@@ -44,8 +53,8 @@ export class Map {
   }
 
   private renderTemplate(template: TemplateRef<any>, context: any): HTMLElement {
-    this._viewContainerRef.clear();
-    const view: EmbeddedViewRef<any> = this._viewContainerRef.createEmbeddedView(template, context);
+    this.viewContainerRef.clear();
+    const view: EmbeddedViewRef<any> = this.viewContainerRef.createEmbeddedView(template, context);
     view.detectChanges();
     const wrapper = document.createElement('div');
     view.rootNodes.forEach((node: any) => wrapper.appendChild(node));
@@ -55,7 +64,7 @@ export class Map {
   getServiceCompanies(rig: WellboreInfo | null): string {
     return rig?.wellboreInfo?.serviceCompanyInfos
       ? Object.values(rig.wellboreInfo.serviceCompanyInfos)
-        .map(c => this._commonService.formatName(c.name)).join(', ')
+        .map(c => this.commonService.formatName(c.name)).join(', ')
       : 'N/A';
   }
 
@@ -65,8 +74,9 @@ export class Map {
 
   onRunMSA(): void {
     const wellboreId = this.popupRig?.wellboreInfo?.wellboreId?.value;
-    this._communicationService.ProcessWellboreForMSA(wellboreId).subscribe((data: any) => {
-      this._commonService.showNotification(
+    if (!wellboreId) return;
+    this.communicationService.processWellboreForMSA(wellboreId).subscribe((data: boolean) => {
+      this.commonService.showNotification(
         data ? 'success' : 'error',
         (data ? 'MSA Initiated for ' : 'Failed to Initiate MSA for ') + wellboreId,
         ''
@@ -76,16 +86,16 @@ export class Map {
 
   onViewSurveys(): void {
     const id = this.popupRig?.wellboreInfo?.wellboreId?.value ?? '';
-    this._commonService.viewWellboreSurveys(id);
+    this.commonService.viewWellboreSurveys(id);
   }
 
   onViewCharts(): void {
     const id = this.popupRig?.wellboreInfo?.wellboreId?.value ?? '';
-    this._commonService.viewWellboreCharts(id);
+    this.commonService.viewWellboreCharts(id);
   }
 
   onViewReport(): void {
-    if (this.popupRig) this._commonService.viewWellboreReport(this.popupRig);
+    if (this.popupRig) this.commonService.viewWellboreReport(this.popupRig);
   }
 
   reinitializeMap(): void {
@@ -94,32 +104,30 @@ export class Map {
       this.mapInstance.off();
       this.mapInstance.remove();
     }
-    const mapContainer = document.getElementById('map');
-    if (mapContainer && mapContainer.hasChildNodes()) {
-      mapContainer.innerHTML = '';
+    const container = this.mapContainer.nativeElement;
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
     }
+
     this.initializeMap();
   }
 
   initializeMap(): void {
-    const initialCenter: L.LatLngExpression = [24.0, 45.0];
-    const initialZoom = 6;
-
-    this.mapInstance = new L.Map('map', {
-      center: initialCenter,
-      zoom: initialZoom,
-      minZoom: 1,
-      maxZoom: 15,
+    this.mapInstance = new L.Map(this.mapContainer.nativeElement, {
+      center: DEFAULT_MAP_CENTER,
+      zoom: DEFAULT_MAP_ZOOM,
+      minZoom: MAP_MIN_ZOOM,
+      maxZoom: MAP_MAX_ZOOM,
       worldCopyJump: true
     });
 
     this.addTileLayer();
-    this.addResetControl(initialCenter, initialZoom);
+    this.addResetControl(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
     this.addMarkers();
 
     setTimeout(() => {
       this.mapInstance.invalidateSize();
-    }, 100);
+    }, MAP_RESIZE_DELAY);
   }
 
   private addTileLayer(): void {
@@ -149,7 +157,7 @@ export class Map {
   }
 
   private addMarkers(): void {
-    if (!this.mapInstance || !this._commonService.filteredWellBoreArr?.length) return;
+    if (!this.mapInstance || !this.commonService.filteredWellBoreArr?.length) return;
 
     if (this.markerClusterGroup) {
       this.mapInstance.removeLayer(this.markerClusterGroup);
@@ -165,7 +173,7 @@ export class Map {
       iconCreateFunction: (cluster) => this.getClusterIcon(cluster),
     });
 
-    this._commonService.filteredWellBoreArr.forEach((rig: WellboreInfo) => {
+    this.commonService.filteredWellBoreArr.forEach((rig: WellboreInfo) => {
       const latitude = rig?.wellboreInfo?.latitude?.value;
       const longitude = rig?.wellboreInfo?.longitude?.value;
       if (latitude == null || longitude == null) return;
@@ -180,7 +188,7 @@ export class Map {
     let hasAnyUserRejected = false;
 
     cluster.getAllChildMarkers().forEach((marker: any) => {
-      const rig = this._commonService.filteredWellBoreArr?.find(
+      const rig = this.commonService.filteredWellBoreArr?.find(
         (r: any) => r?.wellboreInfo?.wellboreId?.value?.trim() === marker.wellboreId
       );
       if (!rig || !Array.isArray(rig.processSummary)) return;

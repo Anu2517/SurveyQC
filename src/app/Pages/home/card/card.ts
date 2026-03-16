@@ -1,34 +1,34 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonService } from '../../../services/common-service';
 import { CommunicationService } from '../../../services/communication-service';
 import { ScrollerModule } from 'primeng/scroller';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-card',
-  imports: [ScrollerModule, TooltipModule, ButtonModule, DatePipe, CommonModule],
+  imports: [ScrollerModule, TooltipModule, ButtonModule, DatePipe],
   templateUrl: './card.html',
   styleUrl: './card.css',
 })
-export class Card {
+export class Card implements OnInit {
+  public commonService = inject(CommonService);
+  private communicationService = inject(CommunicationService);
 
-  constructor(public _commonService: CommonService, private _communicationService: CommunicationService) {
-    this._commonService.getMonitorWellBores();
-  }
+  ngOnInit(): void { }
 
   getAllServiceCompanyNames(companies: any[]): string {
-    return companies.map(company => this._commonService.formatName(company?.name)).join(', ');
+    return companies.map(company => this.commonService.formatName(company?.name)).join(', ');
   }
 
-  InitiateRunMSA(well: any) {
-    this._communicationService.ProcessWellboreForMSA(well.wellboreInfo.wellboreId.value).subscribe((data: any) => {
+  initiateRunMSA(well: any): void {
+    this.communicationService.processWellboreForMSA(well.wellboreInfo.wellboreId.value).subscribe((data: boolean) => {
       if(data){
-        this._commonService.showNotification('success', 'MSA Initiated for '+ well.wellboreInfo.wellboreId.value, '')
+        this.commonService.showNotification('success', 'MSA Initiated for '+ well.wellboreInfo.wellboreId.value, '')
       }
       else{
-        this._commonService.showNotification('error', 'Failed to Initiate MSA for '+ well.wellboreInfo.wellboreId.value, '')
+        this.commonService.showNotification('error', 'Failed to Initiate MSA for '+ well.wellboreInfo.wellboreId.value, '')
       }
 
     });

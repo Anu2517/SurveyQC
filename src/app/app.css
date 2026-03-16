@@ -26,13 +26,10 @@ html, body {
 }
 
 .content-area {
-  flex: 1; 
+  flex: 1;
   display: flex;
   flex-direction: column;
   background: #000;
-}
-
-.content-area {
   overflow-y: auto;
 }
 

@@ -1,5 +1,5 @@
 <div class="layout-container" (mousemove)="onSideResize($event)" (mouseup)="stopResize()">
-  <div class="sidebar" [style.width.px]="_commonService.isSidebarCollapsed ? 0 : siderWidth">
+  <div class="sidebar" [style.width.px]="commonService.isSidebarCollapsed ? 0 : siderWidth">
     <app-sidebar></app-sidebar>
     <div class="resize-handle" (mousedown)="startResize()"></div>
   </div>

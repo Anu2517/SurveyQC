@@ -1,24 +1,36 @@
-<div class="sidebar-wrapper">
+<div class="sidebar-wrapper" role="complementary" aria-label="Sidebar navigation and filters">
   
   <div class="sidebar-header">
     <div class="sidebar-logo">
-      <img [src]="'icon.png'" alt="logo" />
+      <img [src]="'icon.png'" alt="Survey QC Application Logo" />
       <div class="title">
         <h1 sidebar-h1>Survey QC</h1>
-        <span class="version">v{{ applicationVersion }}</span>
+        <span class="version" aria-label="Application version">v{{ applicationVersion }}</span>
       </div>
     </div>
 
     <div class="status">
-      <div class="server-status" [ngClass]="serverConnectionLight ? 'connected' : 'disconnected'">
+      <div 
+        class="server-status" 
+        [ngClass]="serverConnectionLight() ? 'connected' : 'disconnected'"
+        [attr.aria-label]="serverConnectionLight() ? 'Server connected' : 'Server disconnected'"
+        role="status">
       </div>
     </div>
   </div>
 
   <div class="sidebar-body">
     
-    <div class="survey-container">
-      <h3>Survey Count Summary</h3>
+    <section class="survey-container" aria-labelledby="survey-summary-heading">
+      <h3 id="survey-summary-heading">Survey Count Summary</h3>
+      @if (surveyStatus.isError()) {
+        <p-message
+          severity="error"
+          [text]="surveyStatus.errorMessage()"
+          [closable]="true"
+          role="alert">
+        </p-message>
+      }
       @for (item of [
         { label: 'Total Surveys', value: surveyCounts.totalSurveys },
         { label: 'Auto Approved', value: surveyCounts.totalAutoApprovedSurveys },
@@ -29,63 +41,119 @@
       ]; track item.label) {
         <div class="survey-item">
           <label>{{ item.label }}</label>
-          <span>{{ item.value }}</span>
+          <span aria-label="{{ item.label }}: {{ item.value }}">{{ item.value }}</span>
         </div>
       }
-    </div>
+    </section>
 
-    <div class="survey-container">
-      <h3>Filters</h3>
+    <section class="survey-container" aria-labelledby="filters-heading">
+      <h3 id="filters-heading">Filters</h3>
       <div class="filters">
         <div class="field">
-          <label>Search by Rig / Vendor</label>
-          <input pInputText type="text" [(ngModel)]="_commonService.searchText"
-            (ngModelChange)="_commonService.applyFilters(true)" />
+          <label for="search-input">Search by Rig / Vendor</label>
+          <input 
+            pInputText 
+            type="text" 
+            id="search-input"
+            [(ngModel)]="commonService.searchText"
+            (ngModelChange)="commonService.applyFilters(true)"
+            aria-describedby="search-help" />
+          <span id="search-help" class="sr-only">Enter rig name or vendor to filter results</span>
         </div>
 
         <div class="field">
-          <label>Minimum Auto Rejected Surveys</label>
-          <input pInputText type="number" [(ngModel)]="_commonService.minFilterByAutoRejectedSurveys"
-            (ngModelChange)="_commonService.applyFilters(true)" />
+          <label for="min-rejected-input">Search by Auto Rejected Surveys</label>
+          <input 
+            pInputText 
+            type="number" 
+            id="min-rejected-input"
+            [(ngModel)]="commonService.minFilterByAutoRejectedSurveys"
+            (ngModelChange)="commonService.applyFilters(true)"
+            aria-describedby="min-rejected-help" />
+          <span id="min-rejected-help" class="sr-only">Filter by minimum number of auto-rejected surveys</span>
         </div>
 
         <div class="field">
-          <label>Survey Type</label>
-          <p-select [options]="_commonService.surveyTypeArr" optionLabel="key" optionValue="value" [filter]="true"
-            [(ngModel)]="_commonService.selectedSurveyType" (onChange)="_commonService.applyFilters(true)">
+          <label for="survey-type-select">Survey Type</label>
+          <p-select 
+            [options]="commonService.surveyTypeArr" 
+            optionLabel="key" 
+            optionValue="value" 
+            [(ngModel)]="commonService.selectedSurveyType" 
+            (onChange)="commonService.applyFilters(true)"
+            inputId="survey-type-select"
+            aria-label="Select survey type to filter">
           </p-select>
         </div>
 
         <div class="field">
-          <label>Vendor Type</label>
-          <p-select [options]="_commonService.vendorsArr" optionLabel="label" optionValue="value" [filter]="true"
-            [(ngModel)]="_commonService.selectedVendor" (onChange)="_commonService.applyFilters(true)">
+          <label for="vendor-type-select">Vendor Type</label>
+          <p-select 
+            [options]="commonService.vendorsArr" 
+            optionLabel="label" 
+            optionValue="value" 
+            [(ngModel)]="commonService.selectedVendor" 
+            (onChange)="commonService.applyFilters(true)"
+            inputId="vendor-type-select"
+            aria-label="Select vendor to filter">
           </p-select>
         </div>
 
         <div class="field">
-          <label>Rig Start Date</label>
-          <p-datepicker [(ngModel)]="_commonService.startDate" [showTime]="true" dateFormat="yy-mm-dd"
-            (onSelect)="_commonService.applyFilters(true)">
+          <label for="start-date-picker">Rig Start Date</label>
+          <p-datepicker 
+            [(ngModel)]="commonService.startDate" 
+            [showTime]="true" 
+            [showSeconds]="true"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            appendTo="body"
+            [autoZIndex]="true"
+            [baseZIndex]="10000"
+            panelStyleClass="dark-datepicker-panel"
+            hourFormat="24"
+            dateFormat="yy-mm-dd"
+            (onSelect)="commonService.applyFilters(true)"
+            inputId="start-date-picker"
+            ariaLabel="Select start date">
           </p-datepicker>
         </div>
 
         <div class="field">
-          <label>Rig End Date</label>
-          <p-datepicker [(ngModel)]="_commonService.endDate" [showTime]="true" dateFormat="yy-mm-dd"
-            (onSelect)="_commonService.applyFilters(true)">
+          <label for="end-date-picker">Rig End Date</label>
+          <p-datepicker 
+            [(ngModel)]="commonService.endDate" 
+            [showTime]="true" 
+            [showSeconds]="true"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            appendTo="body"
+            [autoZIndex]="true"
+            [baseZIndex]="10000"
+            panelStyleClass='dark-datepicker-panel'
+            hourFormat="24"
+            dateFormat="yy-mm-dd"
+            (onSelect)="commonService.applyFilters(true)"
+            inputId="end-date-picker"
+            ariaLabel="Select end date">
           </p-datepicker>
         </div>
 
-        <button pButton type="button" label="Reset Filters" class="p-button-outlined" (click)="resetFilters()">
+        <button 
+          pButton 
+          type="button" 
+          label="Reset Filters" 
+          class="reset-btn" 
+          (click)="resetFilters()"
+          aria-label="Reset all filters to default values">
         </button>
       </div>
-    </div>
+    </section>
   </div>
 
-  @if (simulationStatus && !_commonService.hideOtherInfo) {
-    <div class="sidebar-footer">
-      <div class="simulation-status">
+  @if (simulationStatus && !commonService.hideOtherInfo) {
+    <div class="sidebar-footer" role="status" aria-live="polite">
+      <div class="simulation-status" aria-label="Simulation mode is currently active">
         Simulation Mode is On
       </div>
     </div>

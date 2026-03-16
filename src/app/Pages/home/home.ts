@@ -12,6 +12,6 @@ import { Map } from './map/map';
   styleUrl: './home.css',
 })
 export class Home {
-  public _commonService = inject(CommonService);
+  public commonService = inject(CommonService);
 
 }

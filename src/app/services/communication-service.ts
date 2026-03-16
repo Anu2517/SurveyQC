@@ -1,116 +1,169 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { WellboreInfo } from '../models/WellBore/WellBoreInfoModel';
+import { WitsmlConnection } from '../models/WellBore/WitsmlConnection';
+import { EmailConfiguration } from '../models/WellBore/EmailConfiguration';
+import { FacLimit } from '../models/WellBore/FacLimit';
+import { ProcessConfiguration } from '../models/WellBore/ProcessConfiguration';
+import { SystemSummaryInfo } from '../models/WellBore/SystemSummaryInfo';
 
+/**
+ * Communication service for all HTTP API calls
+ * Central service for backend communication
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class CommunicationService {
+
   private http = inject(HttpClient);
 
-  public getVersion(): Observable<any> {
+  /**
+   * Get application version from backend
+   * @returns Observable with version string
+   */
+  public getVersion(): Observable<string> {
     return this.http.get(
       environment.baseUrl + 'version/GetVersion',
       { responseType: 'text' }
     );
   }
 
-  public getSummaryInformation(): Observable<any> {
-    return this.http.get(
+  public getSummaryInformation(): Observable<SystemSummaryInfo> {
+    return this.http.get<SystemSummaryInfo>(
       environment.baseUrl + 'wells/get-system-summary-information'
     );
   }
 
-  public getSimulationModeStatus(): Observable<any> {
-    return this.http.get(
+  public getSimulationModeStatus(): Observable<boolean> {
+    return this.http.get<boolean>(
       environment.witsmlUrl + 'job-manager/is-simulation-mode'
     );
   }
 
-  public startProcessing(): Observable<any> {
-    return this.http.get(environment.witsmlUrl + 'job-manager/start-processing');
-  }
-
-  //wellBore
-
-  public getCompressedWell() {
-    return this.http.get('welldata.json')
-  }
-
-  public getMonitoredWellbores(): Observable<any> {
-    return this.http.get(environment.baseUrl + 'wells/get-monitored-wellbores');
-  }
-
-  public getWellboreState(wellboreId: any): Observable<any> {
-    return this.http.get(`${environment.baseUrl}wells/get-wellbore-state?wellboreId=${wellboreId}`);
-  }
-
-  public getWellboreSurveys(wellboreId: any): Observable<any> {
-    return this.http.get(`${environment.baseUrl}wells/get-wellbore-surveys?wellboreId=${wellboreId}`);
-  }
-
-  public updateWellboreSurveyStatus(surveys: any): Observable<any> {
-    return this.http.post(environment.baseUrl + 'wells/update-wellbore-survey-status', surveys);
-  }
-
-  public ProcessWellboreForMSA(wellboreId: any): Observable<any> {
-    return this.http.post(environment.baseUrl + 'MSAProcessor/Process-Wellbore-MSA',
-      JSON.stringify(wellboreId),
-      { headers: { 'Content-Type': 'application/json' } }
+  public startProcessing(): Observable<void> {
+    return this.http.get<void>(
+      environment.witsmlUrl + 'job-manager/start-processing'
     );
   }
 
-  //SurveyQueue
-  public getSurveyQueue(): Observable<any> {
-    return this.http.get(environment.baseUrl + 'process-manager/get-survey-queue');
+  // wellBore
+  public getMonitoredWellbores(): Observable<WellboreInfo[]> {
+    return this.http.get<WellboreInfo[]>(
+      environment.baseUrl + 'wells/get-monitored-wellbores'
+    );
   }
 
-  //email
-  public getEmailConfiguration(): Observable<any> {
-    return this.http.get(environment.baseUrl + 'configuration-manager/get-email-configuration');
+  public getWellboreState(wellboreId: string): Observable<WellboreInfo> {
+    const params = new HttpParams({ fromObject: { wellboreId } });
+    return this.http.get<WellboreInfo>(
+      environment.baseUrl + 'wells/get-wellbore-state',
+      { params }
+    );
   }
 
-  public updateEmailConfiguration(config: any): Observable<any> {
-    return this.http.post(environment.baseUrl + 'configuration-manager/update-email-configuration', config);
+  public getWellboreSurveys(wellboreId: string): Observable<any> {
+    const params = new HttpParams({ fromObject: { wellboreId } });
+    return this.http.get(
+      environment.baseUrl + 'wells/get-wellbore-surveys',
+      { params }
+    );
   }
 
-  //Settings 
-  public getWitsmlConnection(): Observable<any> {
-    return this.http.get(environment.witsmlUrl + 'witsml/get-witsml-connection');
+  public updateWellboreSurveyStatus(surveys: any): Observable<void> {
+    return this.http.post<void>(
+      environment.baseUrl + 'wells/update-wellbore-survey-status',
+      surveys
+    );
   }
 
-  public isWitsmlConnectionValid(): Observable<any> {
-    return this.http.get(environment.witsmlUrl + 'witsml/active-witsml-connection-valid');
+  public processWellboreForMSA(wellboreId: string): Observable<boolean> {
+    return this.http.post<boolean>(
+      environment.baseUrl + 'MSAProcessor/Process-Wellbore-MSA',
+      wellboreId
+    );
   }
 
-  public updateWitsmlConnection(payload: any): Observable<any> {
-    return this.http.post(environment.witsmlUrl + 'witsml/update-witsml-connection', payload);
+  public getSurveyQueue(): Observable<number> {
+    return this.http.get<number>(
+      environment.baseUrl + 'process-manager/get-survey-queue'
+    );
   }
 
-  public testWitsmlConnection(payload: any): Observable<any> {
-    return this.http.post(environment.witsmlUrl + 'witsml/test-witsml-connection', payload);
+  // Email
+  public getEmailConfiguration(): Observable<EmailConfiguration> {
+    return this.http.get<EmailConfiguration>(
+      environment.baseUrl + 'configuration-manager/get-email-configuration'
+    );
   }
 
-  //Overall Summary Charts
-  public getErrorSummmary() {
-    return this.http.get(environment.baseUrl + 'process-manager/get-error-summary');
+  public updateEmailConfiguration(config: EmailConfiguration): Observable<void> {
+    return this.http.post<void>(
+      environment.baseUrl + 'configuration-manager/update-email-configuration',
+      config
+    );
   }
 
-  //FacLimits
-  public getFacLimits(): Observable<any> {
-    return this.http.get(environment.baseUrl + 'configuration-manager/get-fac-limits');
+  // Settings
+  public getWitsmlConnection(): Observable<WitsmlConnection> {
+    return this.http.get<WitsmlConnection>(
+      environment.witsmlUrl + 'witsml/get-witsml-connection'
+    );
   }
 
-  public updateFacLimits(config: any): Observable<any> {
-    return this.http.post(environment.baseUrl + 'configuration-manager/update-fac-limits', config);
+  public isWitsmlConnectionValid(): Observable<boolean> {
+    return this.http.get<boolean>(
+      environment.witsmlUrl + 'witsml/active-witsml-connection-valid'
+    );
   }
 
-  public getProcessConfiguration(): Observable<any> {
-    return this.http.get(environment.baseUrl + 'configuration-manager/get-process-configuration');
+  public updateWitsmlConnection(payload: any): Observable<boolean> {
+    return this.http.post<boolean>(
+      environment.witsmlUrl + 'witsml/update-witsml-connection',
+      payload
+    );
   }
 
-  public updateProcessConfiguration(payload: any): Observable<any> {
-    return this.http.post(environment.baseUrl + 'configuration-manager/update-process-configuration', payload);
+  public testWitsmlConnection(payload: any): Observable<boolean> {
+    return this.http.post<boolean>(
+      environment.witsmlUrl + 'witsml/test-witsml-connection',
+      payload
+    );
+  }
+
+  // Overall Summary Charts
+  public getErrorSummmary(): Observable<any> {
+    return this.http.get(
+      environment.baseUrl + 'process-manager/get-error-summary'
+    );
+  }
+
+  // FacLimits
+  public getFacLimits(): Observable<FacLimit> {
+    return this.http.get<FacLimit>(
+      environment.baseUrl + 'configuration-manager/get-fac-limits'
+    );
+  }
+
+  public updateFacLimits(config: FacLimit): Observable<void> {
+    return this.http.post<void>(
+      environment.baseUrl + 'configuration-manager/update-fac-limits',
+      config
+    );
+  }
+
+  public getProcessConfiguration(): Observable<ProcessConfiguration> {
+    return this.http.get<ProcessConfiguration>(
+      environment.baseUrl + 'configuration-manager/get-process-configuration'
+    );
+  }
+
+  public updateProcessConfiguration(payload: ProcessConfiguration): Observable<void> {
+    return this.http.post<void>(
+      environment.baseUrl + 'configuration-manager/update-process-configuration',
+      payload
+    );
   }
 }

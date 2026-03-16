@@ -1,4 +1,4 @@
-<div id="map"></div>
+<div #mapContainer class="map-container"></div>
 
 <ng-template #markerTemplate let-color="color" let-label="label">
   <div class="marker-wrapper">
@@ -59,7 +59,7 @@
 
       @for (summary of getProcessSummary(popupRig); track summary.name) {
       <tr>
-        <td>{{ _commonService.formatName(summary.name) }}</td>
+        <td>{{ commonService.formatName(summary.name) }}</td>
 
         <td>{{ summary.totalSurveys }}</td>
 

@@ -10,7 +10,6 @@ import { ProcessSummary, WellboreInfo } from '../../../models/WellBore/WellBoreI
 
 @Component({
   selector: 'app-pie-chart',
-  standalone: true,
   imports: [
     CommonModule,
     NgxEchartsDirective,
@@ -20,18 +19,18 @@ import { ProcessSummary, WellboreInfo } from '../../../models/WellBore/WellBoreI
   styleUrls: ['./pie-chart.css']
 })
 export class PieChart implements OnInit, OnDestroy {
-  public _allPieChartOption: EChartsOption[] = [];
+  public allPieChartOption: EChartsOption[] = [];
   public pieChartData: PieChartData[] = [];
-  public _commonService = inject(CommonService);
+  public commonService = inject(CommonService);
   private router = inject(Router);
 
   ngOnInit() {
-    this._commonService.isSidebarCollapsed = true;
+    this.commonService.isSidebarCollapsed = true;
     this.preparePieChartData();
   }
 
   ngOnDestroy() {
-    this._commonService.isSidebarCollapsed = false;
+    this.commonService.isSidebarCollapsed = false;
   }
 
   goBack(): void {
@@ -39,11 +38,11 @@ export class PieChart implements OnInit, OnDestroy {
   }
 
   onChartClick() {
-    this._commonService.isSidebarCollapsed = true;
+    this.commonService.isSidebarCollapsed = true;
   }
 
   preparePieChartData() {
-    this.pieChartData = this._commonService.wellBoreArr.reduce((acc: PieChartData[], item: WellboreInfo) => {
+    this.pieChartData = this.commonService.wellBoreArr.reduce((acc: PieChartData[], item: WellboreInfo) => {
       if (!Array.isArray(item?.processSummary)) return acc;
 
       item.processSummary.forEach((summary: ProcessSummary) => {
@@ -85,7 +84,7 @@ export class PieChart implements OnInit, OnDestroy {
       "Unknown": "rgba(68, 65, 65, 0.904)"
     };
 
-    this._allPieChartOption = this.pieChartData.map(data => ({
+    this.allPieChartOption = this.pieChartData.map(data => ({
       tooltip: {
         trigger: 'item',
         formatter: '{a} <br/>{b}: {c} ({d}%)'
@@ -98,7 +97,7 @@ export class PieChart implements OnInit, OnDestroy {
       },
       series: [
         {
-          name: this._commonService.formatName(data.serviceCompany),
+          name: this.commonService.formatName(data.serviceCompany),
           type: 'pie',
           radius: '95%',
           left: 0,

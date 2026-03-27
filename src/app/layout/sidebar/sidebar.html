@@ -58,7 +58,6 @@
             [(ngModel)]="commonService.searchText"
             (ngModelChange)="commonService.applyFilters(true)"
             aria-describedby="search-help" />
-          <span id="search-help" class="sr-only">Enter rig name or vendor to filter results</span>
         </div>
 
         <div class="field">
@@ -70,7 +69,6 @@
             [(ngModel)]="commonService.minFilterByAutoRejectedSurveys"
             (ngModelChange)="commonService.applyFilters(true)"
             aria-describedby="min-rejected-help" />
-          <span id="min-rejected-help" class="sr-only">Filter by minimum number of auto-rejected surveys</span>
         </div>
 
         <div class="field">

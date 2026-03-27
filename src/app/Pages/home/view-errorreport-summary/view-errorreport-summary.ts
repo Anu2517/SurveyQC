@@ -107,7 +107,7 @@ export class ViewErrorReportSummary implements OnInit, OnDestroy {
 
   loadReport() {
     showLoader(true, 'Loading Report');
-    this.communicationService.getErrorSummmary().subscribe((data: any) => {
+    this.communicationService.getErrorSummary().subscribe((data: any) => {
       showLoader(false);
       if (!data) return;
 

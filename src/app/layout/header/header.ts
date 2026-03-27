@@ -272,11 +272,11 @@ export class Header implements OnInit {
       return;
     }
 
-    // showLoader(true, 'Processing WITSML Configuration...');
+    showLoader(true, 'Processing WITSML Configuration...');
 
     this.communicationService
       .updateWitsmlConnection(this.buildWitsmlPayload())
-      // .pipe(finalize(() => showLoader(false)))
+      .pipe(finalize(() => showLoader(false)))
       .subscribe({
         next: (response: boolean) => {
           if (response) {
@@ -297,11 +297,11 @@ export class Header implements OnInit {
       return;
     }
 
-    // showLoader(true, 'Verifying WITSML Configuration...');
+    showLoader(true, 'Verifying WITSML Configuration...');
 
     this.communicationService
       .testWitsmlConnection(this.buildWitsmlPayload())
-      // .pipe(finalize(() => showLoader(false)))
+      .pipe(finalize(() => showLoader(false)))
       .subscribe({
         next: (response: boolean) => {
           if (response) {

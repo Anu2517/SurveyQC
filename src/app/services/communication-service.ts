@@ -134,7 +134,7 @@ export class CommunicationService {
   }
 
   // Overall Summary Charts
-  public getErrorSummmary(): Observable<any> {
+  public getErrorSummary(): Observable<any> {
     return this.http.get(
       environment.baseUrl + 'process-manager/get-error-summary'
     );

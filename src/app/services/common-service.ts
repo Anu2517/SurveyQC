@@ -83,7 +83,6 @@ export class CommonService {
       });
   }
 
-
   /**
    * Fetch monitored wellbores and update state
    */
@@ -114,7 +113,6 @@ export class CommonService {
       }
     });
   }
-
 
   /**
    * Subscribe to SignalR wellbore state updates

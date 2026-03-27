@@ -77,7 +77,7 @@ export class ErrorSummaryCharts implements OnInit, OnDestroy {
   }
 
   loadChart() {
-    this.communicationService.getErrorSummmary().subscribe((data) => {
+    this.communicationService.getErrorSummary().subscribe((data) => {
       const summary = data as ErrorSummaryData;
       if (!summary?.errorSummary) return;
       this.rawData = summary;
